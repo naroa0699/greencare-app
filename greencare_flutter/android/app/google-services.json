@@ -1,0 +1,82 @@
+{
+  "project_info": {
+    "project_number": "713043779992",
+    "project_id": "greencare-fbe54",
+    "storage_bucket": "greencare-fbe54.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:713043779992:android:b88e137b37b0900aa68bed",
+        "android_client_info": {
+          "package_name": "com.naroa.greencare"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "713043779992-5d1hcqp3g22bb4hctp5ndcf5kjgbh7if.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1y2Ex9_xd5hs_jp5A5vfLKJNuIe_5zoo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "713043779992-5d1hcqp3g22bb4hctp5ndcf5kjgbh7if.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "713043779992-2q9jfei1f7hk3lq08runacq44783cgjv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.naroa.greencare"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:713043779992:android:ebc3910b8a6ecb19a68bed",
+        "android_client_info": {
+          "package_name": "com.naroa.greencare_flutter"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "713043779992-5d1hcqp3g22bb4hctp5ndcf5kjgbh7if.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1y2Ex9_xd5hs_jp5A5vfLKJNuIe_5zoo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "713043779992-5d1hcqp3g22bb4hctp5ndcf5kjgbh7if.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "713043779992-2q9jfei1f7hk3lq08runacq44783cgjv.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.naroa.greencare"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
