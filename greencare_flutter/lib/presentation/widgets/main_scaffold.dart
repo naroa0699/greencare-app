@@ -1,45 +1,72 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class MainScaffold extends StatelessWidget {
   final Widget child;
+  const MainScaffold({super.key, required this.child});
 
-  const MainScaffold({
-    super.key,
-    required this.child,
-  });
+  int _currentIndex(BuildContext context) {
+    final location = GoRouterState.of(context).uri.path;
+    if (location.startsWith('/home')) return 0;
+    if (location.startsWith('/search')) return 1;
+    if (location.startsWith('/my-plants')) return 2;
+    if (location.startsWith('/forum')) return 3;
+    if (location.startsWith('/chatbot')) return 4;
+    return 0;
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: child,
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _currentIndex(context),
+        onDestinationSelected: (index) {
+          switch (index) {
+            case 0:
+              context.go('/home');
+              break;
+            case 1:
+              context.go('/search');
+              break;
+            case 2:
+              context.go('/my-plants');
+              break;
+            case 3:
+              context.go('/forum');
+              break;
+            case 4:
+              context.go('/chatbot');
+              break;
+          }
+        },
+        destinations: const [
+          NavigationDestination(
+            icon: Icon(Icons.home_outlined),
+            selectedIcon: Icon(Icons.home),
             label: 'Inicio',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search),
+          NavigationDestination(
+            icon: Icon(Icons.search_outlined),
+            selectedIcon: Icon(Icons.search),
             label: 'Buscar',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_florist),
-            label: 'Mis Plantas',
+          NavigationDestination(
+            icon: Icon(Icons.eco_outlined),
+            selectedIcon: Icon(Icons.eco),
+            label: 'Mis plantas',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Calendario',
+          NavigationDestination(
+            icon: Icon(Icons.forum_outlined),
+            selectedIcon: Icon(Icons.forum),
+            label: 'Comunidad',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.forum),
-            label: 'Foro',
+          NavigationDestination(
+            icon: Icon(Icons.smart_toy_outlined),
+            selectedIcon: Icon(Icons.smart_toy),
+            label: 'GreenBot',
           ),
         ],
-        currentIndex: 0,
-        onTap: (index) {
-          final routes = ['/home', '/search', '/my-plants', '/calendar', '/forum'];
-          Navigator.pushReplacementNamed(context, routes[index]);
-        },
       ),
     );
   }

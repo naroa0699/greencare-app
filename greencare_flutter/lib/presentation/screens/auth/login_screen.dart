@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Asumiendo que usas Provider para el Auth
-// import '../../../providers/auth_provider.dart'; // Ajusta la ruta a tu provider
+import 'package:go_router/go_router.dart';
+import '../../../providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -10,28 +11,37 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
-  void _login() async {
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _login() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() => _isLoading = true);
+
     try {
-      // Sustituye esto por la llamada real a tu AuthProvider
-      // await context.read<AuthProvider>().signInWithEmail(
-      //   _emailController.text.trim(),
-      //   _passwordController.text.trim(),
-      // );
-      
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('¡Bienvenido!')),
-        );
-      }
+      await context.read<AuthProvider>().signInWithEmail(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
+      // El redirect de GoRouter lleva automáticamente a /home
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(_parseError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -39,41 +49,149 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Traduce los errores de Firebase a español
+  String _parseError(String error) {
+    if (error.contains('user-not-found')) {
+      return 'No existe una cuenta con ese email.';
+    }
+    if (error.contains('wrong-password')) {
+      return 'Contraseña incorrecta.';
+    }
+    if (error.contains('invalid-email')) {
+      return 'El email no es válido.';
+    }
+    if (error.contains('too-many-requests')) {
+      return 'Demasiados intentos. Espera un momento.';
+    }
+    if (error.contains('network-request-failed')) {
+      return 'Sin conexión a internet.';
+    }
+    return 'Error al iniciar sesión. Inténtalo de nuevo.';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Iniciar Sesión')),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextFormField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email'),
-              keyboardType: TextInputType.emailAddress,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo / ícono
+                  const Icon(Icons.eco, size: 80, color: Color(0xFF4CAF50)),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'GreenCare',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF4CAF50),
+                    ),
+                  ),
+                  const Text(
+                    'Cuida tus plantas con inteligencia',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 40),
+
+                  // Email
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email_outlined),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Introduce tu email.';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Email no válido.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Contraseña
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: _obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'Contraseña',
+                      prefixIcon: const Icon(Icons.lock_outlined),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_outlined
+                              : Icons.visibility_off_outlined,
+                        ),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
+                      ),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Introduce tu contraseña.';
+                      }
+                      if (value.length < 6) {
+                        return 'Mínimo 6 caracteres.';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Botón login
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _login,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: const Color(0xFF4CAF50),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: _isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text(
+                              'Iniciar sesión',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Ir a registro
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('¿No tienes cuenta?'),
+                      TextButton(
+                        onPressed: () => context.push('/register'),
+                        child: const Text('Regístrate'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 20),
-            TextFormField(
-              controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Contraseña'),
-              obscureText: true,
-            ),
-            const SizedBox(height: 30),
-            _isLoading 
-              ? const CircularProgressIndicator()
-              : ElevatedButton(
-                  onPressed: _login,
-                  child: const Text('Entrar'),
-                ),
-            TextButton(
-              onPressed: () {
-                // Navegación a la pantalla de registro
-                Navigator.pushNamed(context, '/register'); 
-              },
-              child: const Text('¿No tienes cuenta? Regístrate'),
-            ),
-          ],
+          ),
         ),
       ),
     );
