@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 
 class ChatbotService {
   // Para desarrollo local con emulador Android usa 10.0.2.2 en vez de localhost
-  static const String _backendUrl = 'http://10.0.2.2:3000/api/chat';
+  static const String _backendUrl = 'http://192.168.0.21:3000/api/chat';
 
   Future<String> sendMessage(List<Map<String, String>> messages) async {
     try {

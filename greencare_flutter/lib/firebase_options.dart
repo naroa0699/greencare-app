@@ -25,10 +25,7 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
         return windows;
       case TargetPlatform.linux:
@@ -44,40 +41,51 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyD8HLhzFQm99y8GmAS3GUTOx4ksIvPzr9o',
-    appId: '1:713043779992:web:bef816a36d1735e1a68bed',
-    messagingSenderId: '713043779992',
-    projectId: 'greencare-fbe54',
-    authDomain: 'greencare-fbe54.firebaseapp.com',
-    storageBucket: 'greencare-fbe54.firebasestorage.app',
-    measurementId: 'G-4W5Z32SKRK',
+    apiKey: 'AIzaSyC1tZZgmviQfL7B7K8pK4x6clAcheczTEA',
+    appId: '1:389405571658:web:5f9dba2fe49e14a84984b3',
+    messagingSenderId: '389405571658',
+    projectId: 'greencare-fd460',
+    authDomain: 'greencare-fd460.firebaseapp.com',
+    storageBucket: 'greencare-fd460.firebasestorage.app',
+    measurementId: 'G-XCWGYHR29Y',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyC1y2Ex9_xd5hs_jp5A5vfLKJNuIe_5zoo',
-    appId: '1:713043779992:android:ebc3910b8a6ecb19a68bed',
-    messagingSenderId: '713043779992',
-    projectId: 'greencare-fbe54',
-    storageBucket: 'greencare-fbe54.firebasestorage.app',
+    apiKey: 'AIzaSyCy-X-OAcDCfZ-w7dQ9OhgBXMaVlnwb9uQ',
+    appId: '1:389405571658:android:7ac1e353e3545d7a4984b3',
+    messagingSenderId: '389405571658',
+    projectId: 'greencare-fd460',
+    storageBucket: 'greencare-fd460.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCbBpIffXQpquaka5gcnmljTDSX1aHJsOE',
-    appId: '1:713043779992:ios:f11b11b9ed43e6c7a68bed',
-    messagingSenderId: '713043779992',
-    projectId: 'greencare-fbe54',
-    storageBucket: 'greencare-fbe54.firebasestorage.app',
-    iosClientId: '713043779992-hmldoqsm981ogndl9athunr9k81rb53d.apps.googleusercontent.com',
+    apiKey: 'AIzaSyAUQSdVDGyTLT0vXThALte6NI6AsMv_-AY',
+    appId: '1:389405571658:ios:e608daed1555412b4984b3',
+    messagingSenderId: '389405571658',
+    projectId: 'greencare-fd460',
+    storageBucket: 'greencare-fd460.firebasestorage.app',
+    iosClientId: '389405571658-6p8oib23828h8kggkrgr3d25b5s85m3a.apps.googleusercontent.com',
     iosBundleId: 'com.example.greencareFlutter',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyD8HLhzFQm99y8GmAS3GUTOx4ksIvPzr9o',
-    appId: '1:713043779992:web:20eacaa31ebf3855a68bed',
-    messagingSenderId: '713043779992',
-    projectId: 'greencare-fbe54',
-    authDomain: 'greencare-fbe54.firebaseapp.com',
-    storageBucket: 'greencare-fbe54.firebasestorage.app',
-    measurementId: 'G-C84D2Z6FVX',
+    apiKey: 'AIzaSyC1tZZgmviQfL7B7K8pK4x6clAcheczTEA',
+    appId: '1:389405571658:web:b1f6e8564b0def434984b3',
+    messagingSenderId: '389405571658',
+    projectId: 'greencare-fd460',
+    authDomain: 'greencare-fd460.firebaseapp.com',
+    storageBucket: 'greencare-fd460.firebasestorage.app',
+    measurementId: 'G-R71NGY6N6K',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyAUQSdVDGyTLT0vXThALte6NI6AsMv_-AY',
+    appId: '1:389405571658:ios:e608daed1555412b4984b3',
+    messagingSenderId: '389405571658',
+    projectId: 'greencare-fd460',
+    storageBucket: 'greencare-fd460.firebasestorage.app',
+    iosClientId: '389405571658-6p8oib23828h8kggkrgr3d25b5s85m3a.apps.googleusercontent.com',
+    iosBundleId: 'com.example.greencareFlutter',
+  );
+
 }
