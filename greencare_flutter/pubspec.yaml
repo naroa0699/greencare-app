@@ -34,30 +34,26 @@ dependencies:
   # Calendario
   table_calendar: ^3.1.2
 
+  #notificaciones
+  flutter_local_notifications: ^17.0.0
+  timezone: ^0.9.4
+
   # Firebase
   firebase_core: ^4.7.0
   firebase_auth: ^6.4.0
   cloud_firestore: ^6.3.0
-  firebase_messaging: ^16.2.0
-
   # Estado global
   provider: ^6.1.2
 
   # Peticiones HTTP (para Perenual y tu backend)
   http: ^1.2.1
-  dio: ^5.4.3
 
   # Navegación
   go_router: ^17.2.3
 
-  # Almacenamiento local
-  shared_preferences: ^2.2.3
-
   # UI utilidades
-  flutter_local_notifications: ^21.0.0
   cached_network_image: ^3.3.1
   intl: ^0.20.2
-  lottie: ^3.1.0
   cupertino_icons: ^1.0.8
 
 dev_dependencies:

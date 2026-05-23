@@ -6,6 +6,11 @@ class ForumRepository {
 
   CollectionReference get _posts => _db.collection('forum_posts');
 
+  DocumentReference newPostRef() => _posts.doc();
+
+  DocumentReference newReplyRef(String postId) =>
+      _posts.doc(postId).collection('replies').doc();
+
   Stream<List<ForumPost>> getPosts() {
     return _posts
         .orderBy('createdAt', descending: true)
@@ -14,7 +19,14 @@ class ForumRepository {
   }
 
   Future<void> createPost(ForumPost post) async {
-    await _posts.doc(post.id).set(post.toMap());
+    final batch = _db.batch();
+    batch.set(_posts.doc(post.id), post.toMap());
+    batch.set(
+      _db.collection('users').doc(post.authorId),
+      {'forumPosts': FieldValue.increment(1)},
+      SetOptions(merge: true),
+    );
+    await batch.commit();
   }
 
   Stream<List<ForumReply>> getReplies(String postId) {

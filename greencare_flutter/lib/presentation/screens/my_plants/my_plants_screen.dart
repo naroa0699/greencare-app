@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/repositories/user_plant_repository.dart';
 import '../../../data/models/user_plant_model.dart';
+import '../../../data/services/notification_service.dart';
 
 class MyPlantsScreen extends StatelessWidget {
   const MyPlantsScreen({super.key});
@@ -14,44 +15,43 @@ class MyPlantsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mis Plantas')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => context.push('/search'),
+        child: const Icon(Icons.add),
+      ),
       body: StreamBuilder<List<UserPlantModel>>(
         stream: repo.getMyPlants(userId),
         builder: (context, snapshot) {
-          // Estado de carga
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          // Error
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          // Sin plantas
           final plants = snapshot.data ?? [];
           if (plants.isEmpty) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.eco_outlined, size: 80, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text(
+                  Icon(Icons.eco_outlined, size: 80, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text(
                     'Aún no tienes plantas',
                     style: TextStyle(fontSize: 18, color: Colors.grey),
                   ),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    onPressed: () => context.push('/search'),
-                    icon: const Icon(Icons.search),
-                    label: const Text('Buscar una planta'),
+                  SizedBox(height: 8),
+                  Text(
+                    'Pulsa + para añadir una',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
                   ),
                 ],
               ),
             );
           }
 
-          // Grid de plantas
           return GridView.builder(
             padding: const EdgeInsets.all(16),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -88,90 +88,141 @@ class _PlantCard extends StatelessWidget {
     final daysLeft = plant.nextWatering.difference(DateTime.now()).inDays;
     final needsWater = daysLeft <= 0;
 
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Imagen
-          Expanded(
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                plant.imageUrl != null
-                    ? Image.network(
-                        plant.imageUrl!,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stack) =>
-                            const Icon(Icons.eco, size: 60),
-                      )
-                    : const Icon(Icons.eco, size: 60),
-
-                // Indicador de riego urgente
-                if (needsWater)
-                  Positioned(
-                    top: 8,
-                    right: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.blue,
-                        borderRadius: BorderRadius.circular(12),
+    return GestureDetector(
+      onTap: () => context.push('/details/${plant.id}'),
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  plant.imageUrl != null
+                      ? Image.network(
+                          plant.imageUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stack) =>
+                              const Icon(Icons.eco, size: 60),
+                        )
+                      : const Icon(Icons.eco, size: 60),
+                  if (needsWater)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.water_drop,
+                                color: Colors.white, size: 12),
+                            SizedBox(width: 4),
+                            Text(
+                              '¡Riega!',
+                              style: TextStyle(
+                                  color: Colors.white, fontSize: 11),
+                            ),
+                          ],
+                        ),
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.water_drop, color: Colors.white, size: 12),
-                          SizedBox(width: 4),
-                          Text(
-                            '¡Riega!',
-                            style: TextStyle(
-                                color: Colors.white, fontSize: 11),
-                          ),
-                        ],
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    plant.nickname ?? plant.commonName,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    needsWater
+                        ? 'Necesita agua hoy'
+                        : 'Regar en $daysLeft día${daysLeft == 1 ? '' : 's'}',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: needsWater ? Colors.blue : Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Botones regar y eliminar
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        await repo.waterPlant(
+                            userId, plant.id, plant.watering);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                '${plant.nickname ?? plant.commonName} regada 💧',
+                              ),
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        decoration: BoxDecoration(
+                          color: needsWater
+                              ? Colors.blue
+                              : Colors.blue.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.water_drop,
+                              size: 14,
+                              color: needsWater ? Colors.white : Colors.blue,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              needsWater ? '¡Regar!' : 'Regar',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color:
+                                    needsWater ? Colors.white : Colors.blue,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-              ],
-            ),
-          ),
-
-          // Info
-          Padding(
-            padding: const EdgeInsets.all(8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  plant.nickname ?? plant.commonName,
-                  style: const TextStyle(fontWeight: FontWeight.bold),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  needsWater
-                      ? 'Necesita agua hoy'
-                      : 'Regar en $daysLeft día${daysLeft == 1 ? '' : 's'}',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: needsWater ? Colors.blue : Colors.grey,
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline,
+                        color: Colors.red, size: 20),
+                    onPressed: () => _confirmDelete(context),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-
-          // Botón eliminar
-          Align(
-            alignment: Alignment.centerRight,
-            child: IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red, size: 20),
-              onPressed: () => _confirmDelete(context),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -192,6 +243,7 @@ class _PlantCard extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await repo.deletePlant(userId, plant.id);
+              await NotificationService().cancelNotification(plant.id.hashCode.abs());
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Eliminar'),

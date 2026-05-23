@@ -1,99 +1,102 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import '../../../providers/auth_provider.dart';
 import '../../../data/repositories/user_plant_repository.dart';
 import '../../../data/models/user_plant_model.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  late final String _userId;
+  late final UserPlantRepository _repo;
+
+  @override
+  void initState() {
+    super.initState();
+    _userId = FirebaseAuth.instance.currentUser!.uid;
+    _repo = UserPlantRepository();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    final userId = user!.uid;
-    final repo = UserPlantRepository();
+    final user = FirebaseAuth.instance.currentUser!;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('🌿 GreenCare'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await context.read<AuthProvider>().signOut();
-            },
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => context.push('/profile'),
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Saludo
-            Text(
-              'Hola, ${user.email?.split('@').first ?? 'usuaria'} 👋',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            const Text(
-              '¿Cómo están tus plantas hoy?',
-              style: TextStyle(color: Colors.grey),
-            ),
-            const SizedBox(height: 24),
+      body: StreamBuilder<List<UserPlantModel>>(
+        stream: _repo.getMyPlants(_userId),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
 
-            // Tarjetas de acceso rápido
-            Row(
+          final plants = snapshot.data ?? [];
+          final urgent = plants
+              .where((p) => p.nextWatering.difference(DateTime.now()).inDays <= 0)
+              .toList();
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _QuickCard(
-                  icon: Icons.search,
-                  label: 'Buscar\nplantas',
-                  color: Colors.green,
-                  onTap: () => context.go('/search'),
+                Text(
+                  'Hola, ${user.email?.split('@').first ?? 'usuaria'} 👋',
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
-                const SizedBox(width: 12),
-                _QuickCard(
-                  icon: Icons.smart_toy_outlined,
-                  label: 'Preguntar\na GreenBot',
-                  color: Colors.teal,
-                  onTap: () => context.go('/chatbot'),
+                const SizedBox(height: 4),
+                const Text(
+                  '¿Cómo están tus plantas hoy?',
+                  style: TextStyle(color: Colors.grey),
                 ),
-                const SizedBox(width: 12),
-                _QuickCard(
-                  icon: Icons.forum_outlined,
-                  label: 'Ver\ncomunidad',
-                  color: Colors.orange,
-                  onTap: () => context.go('/forum'),
+                const SizedBox(height: 24),
+
+                Row(
+                  children: [
+                    _QuickCard(
+                      icon: Icons.calendar_month_outlined,
+                      label: 'Calendario\nde cuidados',
+                      color: Colors.purple,
+                      onTap: () => context.go('/calendar'),
+                    ),
+                    const SizedBox(width: 12),
+                    _QuickCard(
+                      icon: Icons.smart_toy_outlined,
+                      label: 'Preguntar\na GreenBot',
+                      color: Colors.teal,
+                      onTap: () => context.go('/chatbot'),
+                    ),
+                    const SizedBox(width: 12),
+                    _QuickCard(
+                      icon: Icons.forum_outlined,
+                      label: 'Ver\ncomunidad',
+                      color: Colors.orange,
+                      onTap: () => context.go('/forum'),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            const SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-            // Plantas que necesitan agua hoy
-            const Text(
-              '💧 Necesitan agua hoy',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 12),
-            StreamBuilder<List<UserPlantModel>>(
-              stream: repo.getMyPlants(userId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-
-                final plants = snapshot.data ?? [];
-                final urgent = plants
-                    .where(
-                      (p) =>
-                          p.nextWatering.difference(DateTime.now()).inDays <= 0,
-                    )
-                    .toList();
-
-                if (urgent.isEmpty) {
-                  return Container(
+                const Text(
+                  '💧 Necesitan agua hoy',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                if (urgent.isEmpty)
+                  Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.green.withValues(alpha: 0.08),
@@ -110,48 +113,37 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ],
                     ),
-                  );
-                }
-
-                return SizedBox(
-                  height: 120,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: urgent.length,
-                    separatorBuilder: (context, _) => const SizedBox(width: 12),
-                    itemBuilder: (context, index) {
-                      final plant = urgent[index];
-                      return _UrgentPlantChip(plant: plant);
-                    },
+                  )
+                else
+                  SizedBox(
+                    height: 120,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: urgent.length,
+                      separatorBuilder: (_, index) => const SizedBox(width: 12),
+                      itemBuilder: (context, index) =>
+                          _UrgentPlantChip(plant: urgent[index]),
+                    ),
                   ),
-                );
-              },
-            ),
-            const SizedBox(height: 28),
+                const SizedBox(height: 28),
 
-            // Mis plantas — resumen
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
-                  '🪴 Mis plantas',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      '🪴 Mis plantas',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    TextButton(
+                      onPressed: () => context.go('/my-plants'),
+                      child: const Text('Ver todas'),
+                    ),
+                  ],
                 ),
-                TextButton(
-                  onPressed: () => context.go('/my-plants'),
-                  child: const Text('Ver todas'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            StreamBuilder<List<UserPlantModel>>(
-              stream: repo.getMyPlants(userId),
-              builder: (context, snapshot) {
-                final plants = snapshot.data ?? [];
-
-                if (plants.isEmpty) {
-                  return GestureDetector(
-                    onTap: () => context.go('/search'),
+                const SizedBox(height: 12),
+                if (plants.isEmpty)
+                  GestureDetector(
+                    onTap: () => context.go('/my-plants'),
                     child: Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
@@ -161,11 +153,7 @@ class HomeScreen extends StatelessWidget {
                       child: const Center(
                         child: Column(
                           children: [
-                            Icon(
-                              Icons.add_circle_outline,
-                              size: 40,
-                              color: Colors.grey,
-                            ),
+                            Icon(Icons.add_circle_outline, size: 40, color: Colors.grey),
                             SizedBox(height: 8),
                             Text(
                               'Añade tu primera planta',
@@ -175,67 +163,56 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                     ),
-                  );
-                }
-
-                // Muestra máximo 4 en el home
-                final preview = plants.take(4).toList();
-                return GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    childAspectRatio: 1.4,
-                  ),
-                  itemCount: preview.length,
-                  itemBuilder: (context, index) {
-                    final plant = preview[index];
-                    return Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.eco,
-                              color: Colors.green,
-                              size: 32,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    plant.nickname ?? plant.commonName,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
+                  )
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 1.4,
+                    ),
+                    itemCount: plants.take(4).length,
+                    itemBuilder: (context, index) {
+                      final plant = plants[index];
+                      return Card(
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.eco, color: Colors.green, size: 32),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      plant.nickname ?? plant.commonName,
+                                      style: const TextStyle(fontWeight: FontWeight.bold),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  Text(
-                                    'Riego: ${plant.watering}',
-                                    style: const TextStyle(
-                                      fontSize: 11,
-                                      color: Colors.grey,
+                                    Text(
+                                      'Riego: ${plant.watering}',
+                                      style: const TextStyle(
+                                          fontSize: 11, color: Colors.grey),
                                     ),
-                                  ),
-                                ],
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
+                      );
+                    },
+                  ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

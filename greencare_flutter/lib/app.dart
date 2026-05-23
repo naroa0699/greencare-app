@@ -10,8 +10,12 @@ import 'presentation/screens/search/search_screen.dart';
 import 'presentation/screens/my_plants/my_plants_screen.dart';
 import 'presentation/screens/calendar/calendar_screen.dart';
 import 'presentation/screens/forum/forum_screen.dart';
+import 'presentation/screens/forum/post_detail_screen.dart';
+import 'data/models/forum_post_model.dart';
 import 'presentation/screens/chatbot/chatbot_screen.dart';
 import 'presentation/widgets/main_scaffold.dart';
+import 'presentation/screens/profile/profile_screen.dart';
+import 'presentation/screens/achievements/achievements_screen.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
@@ -60,10 +64,28 @@ GoRouter createRouter(AuthProvider authProvider) {
             path: '/calendar',
             builder: (context, _) => const CalendarScreen(),
           ),
-          GoRoute(path: '/forum', builder: (context, _) => const ForumScreen()),
+          GoRoute(
+            path: '/forum',
+            builder: (context, _) => const ForumScreen(),
+            routes: [
+              GoRoute(
+                path: 'post',
+                builder: (context, state) =>
+                    PostDetailScreen(post: state.extra as ForumPost),
+              ),
+            ],
+          ),
           GoRoute(
             path: '/chatbot',
             builder: (context, _) => const ChatbotScreen(),
+          ),
+          GoRoute(
+            path: '/profile',
+            builder: (context, _) => const ProfileScreen(),
+          ),
+          GoRoute(
+            path: '/achievements',
+            builder: (context, _) => const AchievementsScreen(),
           ),
         ],
       ),
