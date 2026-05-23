@@ -3,14 +3,26 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../data/models/forum_post_model.dart';
 import '../../../data/repositories/forum_repository.dart';
 
-class PostDetailScreen extends StatelessWidget {
+class PostDetailScreen extends StatefulWidget {
   final ForumPost post;
   const PostDetailScreen({super.key, required this.post});
 
   @override
+  State<PostDetailScreen> createState() => _PostDetailScreenState();
+}
+
+class _PostDetailScreenState extends State<PostDetailScreen> {
+  final _repo = ForumRepository();
+  final _replyController = TextEditingController();
+
+  @override
+  void dispose() {
+    _replyController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final repo = ForumRepository();
-    final replyController = TextEditingController();
     final user = FirebaseAuth.instance.currentUser!;
 
     return Scaffold(
@@ -27,14 +39,14 @@ class PostDetailScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(post.title,
+                        Text(widget.post.title,
                             style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 4),
-                        Text(post.authorName,
+                        Text(widget.post.authorName,
                             style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         const Divider(height: 20),
-                        Text(post.content,
+                        Text(widget.post.content,
                             style: const TextStyle(fontSize: 15, height: 1.5)),
                       ],
                     ),
@@ -45,7 +57,7 @@ class PostDetailScreen extends StatelessWidget {
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 8),
                 StreamBuilder<List<ForumReply>>(
-                  stream: repo.getReplies(post.id),
+                  stream: _repo.getReplies(widget.post.id),
                   builder: (context, snapshot) {
                     final replies = snapshot.data ?? [];
                     if (replies.isEmpty) {
@@ -88,7 +100,7 @@ class PostDetailScreen extends StatelessWidget {
               children: [
                 Expanded(
                   child: TextField(
-                    controller: replyController,
+                    controller: _replyController,
                     decoration: const InputDecoration(
                       hintText: 'Escribe una respuesta...',
                       border: OutlineInputBorder(),
@@ -101,16 +113,17 @@ class PostDetailScreen extends StatelessWidget {
                 IconButton(
                   icon: const Icon(Icons.send, color: Colors.green),
                   onPressed: () async {
-                    if (replyController.text.isEmpty) { return; }
+                    if (_replyController.text.isEmpty) { return; }
+                    final replyRef = _repo.newReplyRef(widget.post.id);
                     final reply = ForumReply(
-                      id: DateTime.now().millisecondsSinceEpoch.toString(),
+                      id: replyRef.id,
                       authorId: user.uid,
                       authorName: user.email?.split('@').first ?? 'Usuario',
-                      content: replyController.text.trim(),
+                      content: _replyController.text.trim(),
                       createdAt: DateTime.now(),
                     );
-                    await repo.addReply(post.id, reply);
-                    replyController.clear();
+                    await _repo.addReply(widget.post.id, reply);
+                    _replyController.clear();
                   },
                 ),
               ],

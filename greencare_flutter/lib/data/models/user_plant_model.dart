@@ -8,6 +8,7 @@ class UserPlantModel {
   final String watering;
   final DateTime addedAt;
   final DateTime nextWatering;
+  final DateTime? lastWatered;
 
   UserPlantModel({
     required this.id,
@@ -17,6 +18,7 @@ class UserPlantModel {
     required this.watering,
     required this.addedAt,
     required this.nextWatering,
+    this.lastWatered,
   });
 
   factory UserPlantModel.fromFirestore(DocumentSnapshot doc) {
@@ -29,17 +31,20 @@ class UserPlantModel {
       watering: data['watering'] ?? 'Average',
       addedAt: (data['addedAt'] as Timestamp).toDate(),
       nextWatering: (data['nextWatering'] as Timestamp).toDate(),
+      lastWatered: data['lastWatered'] != null
+          ? (data['lastWatered'] as Timestamp).toDate()
+          : null,
     );
   }
 
-  Map<String, dynamic> toMap() {
-    return {
-      'commonName': commonName,
-      'nickname': nickname,
-      'imageUrl': imageUrl,
-      'watering': watering,
-      'addedAt': Timestamp.fromDate(addedAt),
-      'nextWatering': Timestamp.fromDate(nextWatering),
-    };
-  }
+  Map<String, dynamic> toMap() => {
+    'commonName': commonName,
+    'nickname': nickname,
+    'imageUrl': imageUrl,
+    'watering': watering,
+    'addedAt': Timestamp.fromDate(addedAt),
+    'nextWatering': Timestamp.fromDate(nextWatering),
+    if (lastWatered != null)
+      'lastWatered': Timestamp.fromDate(lastWatered!),
+  };
 }

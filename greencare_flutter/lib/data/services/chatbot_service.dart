@@ -1,15 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../../../core/constants/app_config.dart';
 
 class ChatbotService {
-  // Para desarrollo local con emulador Android usa 10.0.2.2 en vez de localhost
-  static const String _backendUrl = 'http://192.168.0.21:3000/api/chat';
+  static const String _chatUrl = '$backendBaseUrl/api/chat';
+  static const String _plantCareUrl = '$backendBaseUrl/api/plant-care';
 
   Future<String> sendMessage(List<Map<String, String>> messages) async {
     try {
       final response = await http.post(
-        Uri.parse(_backendUrl),
+        Uri.parse(_chatUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'messages': messages}),
       ).timeout(const Duration(seconds: 30));
@@ -25,4 +26,30 @@ class ChatbotService {
       rethrow;
     }
   }
+
+  Future<Map<String, String>> getPlantCare(String plantName) async {
+  try {
+    final response = await http.post(
+      Uri.parse(_plantCareUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'plantName': plantName}),
+    ).timeout(const Duration(seconds: 15));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return {
+        'watering': data['watering'] ?? 'Average',
+        'sunlight': data['sunlight'] ?? 'part shade',
+        'cycle': data['cycle'] ?? 'Perennial',
+      };
+    }
+  } catch (e) {
+    debugPrint('getPlantCare error: $e');
+  }
+  return {
+    'watering': 'Average',
+    'sunlight': 'part shade',
+    'cycle': 'Perennial',
+  };
+}
 }

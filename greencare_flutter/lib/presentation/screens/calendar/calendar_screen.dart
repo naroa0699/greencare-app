@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -15,6 +16,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   List<UserPlantModel> _allPlants = [];
+  StreamSubscription<List<UserPlantModel>>? _plantsSub;
 
   @override
   void initState() {
@@ -23,14 +25,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _loadPlants();
   }
 
+  @override
+  void dispose() {
+    _plantsSub?.cancel();
+    super.dispose();
+  }
+
   void _loadPlants() {
     final userId = FirebaseAuth.instance.currentUser!.uid;
-    UserPlantRepository().getMyPlants(userId).listen((plants) {
+    _plantsSub = UserPlantRepository().getMyPlants(userId).listen((plants) {
       if (mounted) setState(() => _allPlants = plants);
     });
   }
 
-  // Plantas que necesitan riego en un día concreto
   List<UserPlantModel> _plantsForDay(DateTime day) {
     return _allPlants.where((plant) {
       final d = plant.nextWatering;
@@ -38,11 +45,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     }).toList();
   }
 
-  // ¿Hay eventos ese día?
   List<UserPlantModel> _getEventsForDay(DateTime day) => _plantsForDay(day);
 
   @override
   Widget build(BuildContext context) {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final repo = UserPlantRepository();
     final selectedPlants = _selectedDay != null
         ? _plantsForDay(_selectedDay!)
         : <UserPlantModel>[];
@@ -67,7 +75,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 shape: BoxShape.circle,
               ),
               todayDecoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.4),
+                color: Theme.of(context)
+                    .colorScheme
+                    .primary
+                    .withValues(alpha: 0.4),
                 shape: BoxShape.circle,
               ),
             ),
@@ -84,7 +95,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           const Divider(),
 
-          // Lista de plantas para el día seleccionado
           Expanded(
             child: selectedPlants.isEmpty
                 ? const Center(
@@ -96,7 +106,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                         SizedBox(height: 12),
                         Text(
                           'Nada que hacer este dia',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          style:
+                              TextStyle(color: Colors.grey, fontSize: 16),
                         ),
                       ],
                     ),
@@ -107,6 +118,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     itemBuilder: (context, index) {
                       final plant = selectedPlants[index];
                       return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           leading: const CircleAvatar(
                             backgroundColor: Colors.blue,
@@ -115,15 +127,37 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ),
                           title: Text(
                             plant.nickname ?? plant.commonName,
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold),
                           ),
                           subtitle: Text(
                             'Riego: ${plant.watering}',
                             style: const TextStyle(color: Colors.grey),
                           ),
-                          trailing: const Icon(
-                            Icons.water_drop_outlined,
-                            color: Colors.blue,
+                          trailing: ElevatedButton.icon(
+                            onPressed: () async {
+                              await repo.waterPlant(
+                                  userId, plant.id, plant.watering);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '${plant.nickname ?? plant.commonName} regada 💧',
+                                    ),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                              }
+                            },
+                            icon: const Icon(Icons.water_drop, size: 16),
+                            label: const Text('Regar'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.blue,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 6),
+                              textStyle: const TextStyle(fontSize: 12),
+                            ),
                           ),
                         ),
                       );

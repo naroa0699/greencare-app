@@ -8,8 +8,8 @@ class MainScaffold extends StatelessWidget {
   int _currentIndex(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     if (location.startsWith('/home')) return 0;
-    if (location.startsWith('/search')) return 1;
-    if (location.startsWith('/my-plants')) return 2;
+    if (location.startsWith('/my-plants')) return 1;
+    if (location.startsWith('/calendar')) return 2;
     if (location.startsWith('/forum')) return 3;
     if (location.startsWith('/chatbot')) return 4;
     return 0;
@@ -27,10 +27,10 @@ class MainScaffold extends StatelessWidget {
               context.go('/home');
               break;
             case 1:
-              context.go('/search');
+              context.go('/my-plants');
               break;
             case 2:
-              context.go('/my-plants');
+              context.go('/calendar');
               break;
             case 3:
               context.go('/forum');
@@ -47,14 +47,14 @@ class MainScaffold extends StatelessWidget {
             label: 'Inicio',
           ),
           NavigationDestination(
-            icon: Icon(Icons.search_outlined),
-            selectedIcon: Icon(Icons.search),
-            label: 'Buscar',
-          ),
-          NavigationDestination(
             icon: Icon(Icons.eco_outlined),
             selectedIcon: Icon(Icons.eco),
             label: 'Mis plantas',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.calendar_month_outlined),
+            selectedIcon: Icon(Icons.calendar_month),
+            label: 'Calendario',
           ),
           NavigationDestination(
             icon: Icon(Icons.forum_outlined),

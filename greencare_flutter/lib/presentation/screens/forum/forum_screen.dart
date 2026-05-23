@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:go_router/go_router.dart';
 import '../../../data/models/forum_post_model.dart';
 import '../../../data/repositories/forum_repository.dart';
-import 'post_detail_screen.dart';
 
 class ForumScreen extends StatelessWidget {
   const ForumScreen({super.key});
@@ -76,12 +75,7 @@ class ForumScreen extends StatelessWidget {
                       ),
                     ],
                   ),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => PostDetailScreen(post: post),
-                    ),
-                  ),
+                  onTap: () => context.push('/forum/post', extra: post),
                 ),
               );
             },
@@ -96,69 +90,93 @@ class ForumScreen extends StatelessWidget {
   }
 
   void _showNewPostDialog(BuildContext context, ForumRepository repo) {
-    final titleController = TextEditingController();
-    final contentController = TextEditingController();
-    final user = FirebaseAuth.instance.currentUser!;
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          left: 16, right: 16, top: 16,
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 16,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Nueva publicacion',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 16),
-            TextField(
-              controller: titleController,
-              decoration: const InputDecoration(
-                labelText: 'Titulo',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: contentController,
-              maxLines: 4,
-              decoration: const InputDecoration(
-                labelText: 'Contenido',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () async {
-                  if (titleController.text.isEmpty ||
-                      contentController.text.isEmpty) { return; }
+      builder: (ctx) => _NewPostSheet(repo: repo),
+    );
+  }
+}
 
-                  final post = ForumPost(
-                    id: DateTime.now().millisecondsSinceEpoch.toString(),
-                    authorId: user.uid,
-                    authorName: user.email?.split('@').first ?? 'Usuario',
-                    title: titleController.text.trim(),
-                    content: contentController.text.trim(),
-                    createdAt: DateTime.now(),
-                  );
+class _NewPostSheet extends StatefulWidget {
+  final ForumRepository repo;
+  const _NewPostSheet({required this.repo});
 
-                  await repo.createPost(post);
-                  if (ctx.mounted) { Navigator.pop(ctx); }
-                },
-                child: const Text('Publicar'),
-              ),
+  @override
+  State<_NewPostSheet> createState() => _NewPostSheetState();
+}
+
+class _NewPostSheetState extends State<_NewPostSheet> {
+  final _titleController = TextEditingController();
+  final _contentController = TextEditingController();
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _contentController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final user = FirebaseAuth.instance.currentUser!;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 16, right: 16, top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Nueva publicacion',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 16),
+          TextField(
+            controller: _titleController,
+            decoration: const InputDecoration(
+              labelText: 'Titulo',
+              border: OutlineInputBorder(),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _contentController,
+            maxLines: 4,
+            decoration: const InputDecoration(
+              labelText: 'Contenido',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                if (_titleController.text.isEmpty ||
+                    _contentController.text.isEmpty) { return; }
+
+                final docRef = widget.repo.newPostRef();
+                final post = ForumPost(
+                  id: docRef.id,
+                  authorId: user.uid,
+                  authorName: user.email?.split('@').first ?? 'Usuario',
+                  title: _titleController.text.trim(),
+                  content: _contentController.text.trim(),
+                  createdAt: DateTime.now(),
+                );
+
+                await widget.repo.createPost(post);
+                if (context.mounted) { Navigator.pop(context); }
+              },
+              child: const Text('Publicar'),
+            ),
+          ),
+        ],
       ),
     );
   }
