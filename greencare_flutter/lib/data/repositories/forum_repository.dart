@@ -21,11 +21,9 @@ class ForumRepository {
   Future<void> createPost(ForumPost post) async {
     final batch = _db.batch();
     batch.set(_posts.doc(post.id), post.toMap());
-    batch.set(
-      _db.collection('users').doc(post.authorId),
-      {'forumPosts': FieldValue.increment(1)},
-      SetOptions(merge: true),
-    );
+    batch.set(_db.collection('users').doc(post.authorId), {
+      'forumPosts': FieldValue.increment(1),
+    }, SetOptions(merge: true));
     await batch.commit();
   }
 
@@ -42,9 +40,50 @@ class ForumRepository {
     final batch = _db.batch();
     final replyRef = _posts.doc(postId).collection('replies').doc(reply.id);
     batch.set(replyRef, reply.toMap());
-    batch.update(_posts.doc(postId), {
-      'replyCount': FieldValue.increment(1),
-    });
+    batch.update(_posts.doc(postId), {'replyCount': FieldValue.increment(1)});
     await batch.commit();
+  }
+
+  Future<void> toggleReaction(
+    String postId,
+    String emoji,
+    String userId,
+  ) async {
+    final postRef = _posts.doc(postId);
+    final doc = await postRef.get();
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    final rawReactions = data['reactions'] as Map<String, dynamic>? ?? {};
+    final users = List<String>.from(rawReactions[emoji] ?? []);
+
+    if (users.contains(userId)) {
+      users.remove(userId);
+    } else {
+      users.add(userId);
+    }
+
+    await postRef.update({'reactions.$emoji': users});
+  }
+
+  Future<void> toggleReplyReaction(
+    String postId,
+    String replyId,
+    String emoji,
+    String userId,
+  ) async {
+    final replyRef = _posts.doc(postId).collection('replies').doc(replyId);
+    final doc = await replyRef.get();
+    // ignore: unnecessary_cast
+    final data = doc.data() as Map<String, dynamic>? ?? {};
+    final rawReactions =
+        (data['reactions'] as Map?)?.cast<String, dynamic>() ?? {};
+    final users = List<String>.from(rawReactions[emoji] ?? []);
+
+    if (users.contains(userId)) {
+      users.remove(userId);
+    } else {
+      users.add(userId);
+    }
+
+    await replyRef.update({'reactions.$emoji': users});
   }
 }

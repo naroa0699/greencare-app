@@ -8,6 +8,7 @@ class ForumPost {
   final String content;
   final DateTime createdAt;
   final int replyCount;
+  final Map<String, List<String>> reactions; // emoji -> [userId, ...]
 
   ForumPost({
     required this.id,
@@ -17,10 +18,15 @@ class ForumPost {
     required this.content,
     required this.createdAt,
     this.replyCount = 0,
+    this.reactions = const {},
   });
 
   factory ForumPost.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    final rawReactions = data['reactions'] as Map<String, dynamic>? ?? {};
+    final reactions = rawReactions.map(
+      (key, value) => MapEntry(key, List<String>.from(value as List)),
+    );
     return ForumPost(
       id: doc.id,
       authorId: data['authorId'] ?? '',
@@ -29,6 +35,7 @@ class ForumPost {
       content: data['content'] ?? '',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       replyCount: data['replyCount'] ?? 0,
+      reactions: reactions,
     );
   }
 
@@ -39,6 +46,7 @@ class ForumPost {
     'content': content,
     'createdAt': Timestamp.fromDate(createdAt),
     'replyCount': replyCount,
+    'reactions': reactions,
   };
 }
 
@@ -48,6 +56,7 @@ class ForumReply {
   final String authorName;
   final String content;
   final DateTime createdAt;
+  final Map<String, List<String>> reactions;
 
   ForumReply({
     required this.id,
@@ -55,16 +64,22 @@ class ForumReply {
     required this.authorName,
     required this.content,
     required this.createdAt,
+    this.reactions = const {},
   });
 
   factory ForumReply.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    final rawReactions = data['reactions'] as Map<String, dynamic>? ?? {};
+    final reactions = rawReactions.map(
+      (key, value) => MapEntry(key, List<String>.from(value as List)),
+    );
     return ForumReply(
       id: doc.id,
       authorId: data['authorId'] ?? '',
       authorName: data['authorName'] ?? 'Usuario',
       content: data['content'] ?? '',
       createdAt: (data['createdAt'] as Timestamp).toDate(),
+      reactions: reactions,
     );
   }
 
@@ -73,5 +88,6 @@ class ForumReply {
     'authorName': authorName,
     'content': content,
     'createdAt': Timestamp.fromDate(createdAt),
+    'reactions': reactions,
   };
 }

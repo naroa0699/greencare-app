@@ -13,6 +13,7 @@ class NotificationService {
 
   Future<void> init() async {
     tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Europe/Madrid'));
 
     const initSettings = InitializationSettings(
       android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -20,8 +21,7 @@ class NotificationService {
 
     await _plugin.initialize(initSettings);
 
-    // Pedir permiso de notificaciones en Android 13+
-    final plugin = _plugin
+    final AndroidFlutterLocalNotificationsPlugin? plugin = _plugin
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
         >();
@@ -35,17 +35,16 @@ class NotificationService {
     required String plantName,
     required DateTime scheduledDate,
   }) async {
-    if (scheduledDate.isBefore(DateTime.now())) {
-      return;
-    }
+    if (scheduledDate.isBefore(DateTime.now())) return;
 
     const notificationDetails = NotificationDetails(
       android: AndroidNotificationDetails(
         'watering_channel',
         'Recordatorios de riego',
         channelDescription: 'Avisos para regar tus plantas',
-        importance: Importance.high,
-        priority: Priority.high,
+        importance: Importance.max,
+        priority: Priority.max,
+        playSound: true,
       ),
     );
 

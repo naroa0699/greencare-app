@@ -7,8 +7,6 @@ import '../../../providers/auth_provider.dart';
 import '../../../data/repositories/user_plant_repository.dart';
 import '../../../data/models/user_plant_model.dart';
 import '../../../providers/auth_provider.dart' as app_auth;
-import '../../../core/theme/app_themes.dart';
-import '../../../providers/theme_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -97,63 +95,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
-  void _showThemeSelector(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => StatefulBuilder(
-        builder: (ctx, setModalState) => Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Elige tu tema',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              ...AppThemeType.values.map((type) {
-                final isSelected = ctx.watch<ThemeProvider>().themeType == type;
-                return ListTile(
-                  leading: Text(
-                    AppThemes.getEmoji(type),
-                    style: const TextStyle(fontSize: 28),
-                  ),
-                  title: Text(AppThemes.getName(type)),
-                  trailing: isSelected
-                      ? const Icon(Icons.check_circle, color: Colors.green)
-                      : null,
-                  onTap: () {
-                    ctx.read<ThemeProvider>().setTheme(type);
-                    setModalState(() {});
-                  },
-                );
-              }),
-              const Divider(),
-              SwitchListTile(
-                title: const Text('Modo oscuro'),
-                secondary: const Icon(Icons.dark_mode_outlined),
-                value: ctx.watch<ThemeProvider>().isDark,
-                onChanged: (_) {
-                  ctx.read<ThemeProvider>().toggleDark();
-                  setModalState(() {});
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
     final userId = user!.uid;
     final repo = UserPlantRepository();
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Mi perfil')),
@@ -164,7 +111,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             CircleAvatar(
               radius: 50,
-              backgroundColor: Theme.of(context).colorScheme.primary,
+              backgroundColor: scheme.primary,
               child: Text(
                 (user.displayName?.isNotEmpty == true
                         ? user.displayName!
@@ -261,21 +208,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           icon: Icons.eco,
                           label: 'Plantas',
                           value: '${plants.length}',
-                          color: Colors.green,
+                          color: scheme.primary,
                         ),
                         const SizedBox(width: 8),
                         _StatCard(
                           icon: Icons.water_drop,
                           label: 'Pendientes',
                           value: '$urgent',
-                          color: Colors.blue,
+                          color: scheme.secondary,
                         ),
                         const SizedBox(width: 8),
                         _StatCard(
                           icon: Icons.local_fire_department,
                           label: 'Racha',
                           value: '$streak 🔥',
-                          color: Colors.orange,
+                          color: scheme.tertiary,
                         ),
                       ],
                     );
@@ -286,9 +233,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
 
             _OptionTile(
-              icon: Icons.palette_outlined,
-              label: 'Personalizar tema',
-              onTap: () => _showThemeSelector(context),
+              icon: Icons.settings_outlined,
+              label: 'Ajustes',
+              onTap: () => context.push('/settings'),
             ),
             _OptionTile(
               icon: Icons.emoji_events_outlined,

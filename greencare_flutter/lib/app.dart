@@ -17,6 +17,7 @@ import 'presentation/screens/chatbot/chatbot_screen.dart';
 import 'presentation/widgets/main_scaffold.dart';
 import 'presentation/screens/profile/profile_screen.dart';
 import 'presentation/screens/achievements/achievements_screen.dart';
+import 'presentation/screens/settings/settings_screen.dart';
 
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
@@ -86,6 +87,10 @@ GoRouter createRouter(AuthProvider authProvider) {
           GoRoute(
             path: '/achievements',
             builder: (context, _) => const AchievementsScreen(),
+          ),
+          GoRoute(
+            path: '/settings',
+            builder: (context, _) => const SettingsScreen(),
           ),
         ],
       ),
