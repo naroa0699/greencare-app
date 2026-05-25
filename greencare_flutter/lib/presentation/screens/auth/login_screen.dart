@@ -15,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
   bool _obscurePassword = true;
 
   @override
@@ -26,15 +27,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
-
     try {
       await context.read<AuthProvider>().signInWithEmail(
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      // El redirect de GoRouter lleva automáticamente a /home
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -49,7 +47,24 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Traduce los errores de Firebase a español
+  Future<void> _loginWithGoogle() async {
+    setState(() => _isGoogleLoading = true);
+    try {
+      await context.read<AuthProvider>().signInWithGoogle();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error con Google: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isGoogleLoading = false);
+    }
+  }
+
   String _parseError(String error) {
     if (error.contains('user-not-found')) {
       return 'No existe una cuenta con ese email.';
@@ -81,7 +96,6 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo / ícono
                   const Icon(Icons.eco, size: 80, color: Color(0xFF4CAF50)),
                   const SizedBox(height: 12),
                   const Text(
@@ -173,6 +187,49 @@ class _LoginScreenState extends State<LoginScreen> {
                               'Iniciar sesión',
                               style: TextStyle(fontSize: 16),
                             ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Separador
+                  Row(
+                    children: [
+                      const Expanded(child: Divider()),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        child: Text(
+                          'o',
+                          style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                      ),
+                      const Expanded(child: Divider()),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Botón Google
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _isGoogleLoading ? null : _loginWithGoogle,
+                      icon: _isGoogleLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Image.network(
+                              'https://www.google.com/favicon.ico',
+                              height: 20,
+                              width: 20,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.login, size: 20),
+                            ),
+                      label: const Text('Continuar con Google'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        side: BorderSide(color: Colors.grey.shade300),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),

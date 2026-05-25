@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "389405571658-mkcngfojbk7ionhpg71kebgk7sgite6a.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.naroa.greencare_flutter",
+            "certificate_hash": "aae47fc4a61766739520e276ca85e9ed0db56515"
+          }
+        },
+        {
           "client_id": "389405571658-gqhrpotfgfohcolfaseff6sn4q7emgil.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -29,6 +37,13 @@
             {
               "client_id": "389405571658-gqhrpotfgfohcolfaseff6sn4q7emgil.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "389405571658-6p8oib23828h8kggkrgr3d25b5s85m3a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.greencareFlutter"
+              }
             }
           ]
         }

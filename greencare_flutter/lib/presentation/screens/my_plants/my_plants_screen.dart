@@ -88,6 +88,17 @@ class _PlantCard extends StatelessWidget {
     final daysLeft = plant.nextWatering.difference(DateTime.now()).inDays;
     final needsWater = daysLeft <= 0;
 
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final lastWatered = plant.lastWatered;
+    final wateredToday =
+        lastWatered != null &&
+        DateTime(
+          lastWatered.year,
+          lastWatered.month,
+          lastWatered.day,
+        ).isAtSameMomentAs(today);
+
     return GestureDetector(
       onTap: () => context.push('/details/${plant.id}'),
       child: Card(
@@ -107,13 +118,15 @@ class _PlantCard extends StatelessWidget {
                               const Icon(Icons.eco, size: 60),
                         )
                       : const Icon(Icons.eco, size: 60),
-                  if (needsWater)
+                  if (needsWater && !wateredToday)
                     Positioned(
                       top: 8,
                       right: 8,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.blue,
                           borderRadius: BorderRadius.circular(12),
@@ -121,13 +134,47 @@ class _PlantCard extends StatelessWidget {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.water_drop,
-                                color: Colors.white, size: 12),
+                            Icon(
+                              Icons.water_drop,
+                              color: Colors.white,
+                              size: 12,
+                            ),
                             SizedBox(width: 4),
                             Text(
                               '¡Riega!',
                               style: TextStyle(
-                                  color: Colors.white, fontSize: 11),
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  if (wateredToday)
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check, color: Colors.white, size: 12),
+                            SizedBox(width: 4),
+                            Text(
+                              '¡Regada!',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                              ),
                             ),
                           ],
                         ),
@@ -149,43 +196,63 @@ class _PlantCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    needsWater
+                    wateredToday
+                        ? '✅ Regada hoy'
+                        : needsWater
                         ? 'Necesita agua hoy'
                         : 'Regar en $daysLeft día${daysLeft == 1 ? '' : 's'}',
                     style: TextStyle(
                       fontSize: 11,
-                      color: needsWater ? Colors.blue : Colors.grey,
+                      color: wateredToday
+                          ? Colors.green
+                          : needsWater
+                          ? Colors.blue
+                          : Colors.grey,
                     ),
                   ),
                 ],
               ),
             ),
-
-            // Botones regar y eliminar
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Row(
                 children: [
                   Expanded(
                     child: GestureDetector(
-                      onTap: () async {
-                        await repo.waterPlant(
-                            userId, plant.id, plant.watering);
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                '${plant.nickname ?? plant.commonName} regada 💧',
-                              ),
-                              duration: const Duration(seconds: 2),
-                            ),
-                          );
-                        }
-                      },
+                      onTap: wateredToday
+                          ? null
+                          : () async {
+                              await repo.waterPlant(
+                                userId,
+                                plant.id,
+                                plant.watering,
+                              );
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      '${plant.nickname ?? plant.commonName} regada 💧',
+                                    ),
+                                    action: SnackBarAction(
+                                      label: 'Deshacer',
+                                      onPressed: () async {
+                                        await repo.undoWatering(
+                                          userId,
+                                          plant.id,
+                                        );
+                                      },
+                                    ),
+                                    duration: const Duration(seconds: 4),
+                                  ),
+                                );
+                              }
+                            },
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         decoration: BoxDecoration(
-                          color: needsWater
+                          color: wateredToday
+                              ? Colors.grey.shade200
+                              : needsWater
                               ? Colors.blue
                               : Colors.blue.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
@@ -194,18 +261,29 @@ class _PlantCard extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.water_drop,
+                              wateredToday ? Icons.check : Icons.water_drop,
                               size: 14,
-                              color: needsWater ? Colors.white : Colors.blue,
+                              color: wateredToday
+                                  ? Colors.grey
+                                  : needsWater
+                                  ? Colors.white
+                                  : Colors.blue,
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              needsWater ? '¡Regar!' : 'Regar',
+                              wateredToday
+                                  ? 'Ya regada hoy'
+                                  : needsWater
+                                  ? '¡Regar!'
+                                  : 'Regar',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
-                                color:
-                                    needsWater ? Colors.white : Colors.blue,
+                                color: wateredToday
+                                    ? Colors.grey
+                                    : needsWater
+                                    ? Colors.white
+                                    : Colors.blue,
                               ),
                             ),
                           ],
@@ -214,8 +292,11 @@ class _PlantCard extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.delete_outline,
-                        color: Colors.red, size: 20),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: Colors.red,
+                      size: 20,
+                    ),
                     onPressed: () => _confirmDelete(context),
                   ),
                 ],
@@ -233,7 +314,8 @@ class _PlantCard extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Eliminar planta'),
         content: Text(
-            '¿Seguro que quieres eliminar "${plant.nickname ?? plant.commonName}"?'),
+          '¿Seguro que quieres eliminar "${plant.nickname ?? plant.commonName}"?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -243,7 +325,9 @@ class _PlantCard extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(ctx);
               await repo.deletePlant(userId, plant.id);
-              await NotificationService().cancelNotification(plant.id.hashCode.abs());
+              await NotificationService().cancelNotification(
+                plant.id.hashCode.abs(),
+              );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Eliminar'),

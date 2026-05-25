@@ -9,10 +9,11 @@ class UserPlantRepository {
       _db.collection('users').doc(userId).collection('my_plants');
 
   Stream<List<UserPlantModel>> getMyPlants(String userId) {
-    return _plantsRef(userId).snapshots().map((snapshot) =>
-        snapshot.docs
-            .map((doc) => UserPlantModel.fromFirestore(doc))
-            .toList());
+    return _plantsRef(userId).snapshots().map(
+      (snapshot) => snapshot.docs
+          .map((doc) => UserPlantModel.fromFirestore(doc))
+          .toList(),
+    );
   }
 
   Future<void> addPlant(String userId, UserPlantModel plant) async {
@@ -23,43 +24,116 @@ class UserPlantRepository {
     await _plantsRef(userId).doc(plantId).delete();
   }
 
-  Future<void> updateNextWatering(String userId, String plantId, DateTime date) async {
-    await _plantsRef(userId).doc(plantId).update({'nextWatering': Timestamp.fromDate(date)});
+  Future<void> updateNextWatering(
+    String userId,
+    String plantId,
+    DateTime date,
+  ) async {
+    await _plantsRef(
+      userId,
+    ).doc(plantId).update({'nextWatering': Timestamp.fromDate(date)});
   }
 
-  Future<void> waterPlant(String userId, String plantId, String wateringType) async {
+  Future<void> waterPlant(
+    String userId,
+    String plantId,
+    String wateringType,
+  ) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final yesterday = today.subtract(const Duration(days: 1));
 
-    final userRef = _db.collection('users').doc(userId);
-    final userDoc = await userRef.get();
-    final data = userDoc.data() ?? {};
-
-    final lastTs = data['lastWateredDate'] as Timestamp?;
-    final lastDay = lastTs != null
-        ? DateTime(lastTs.toDate().year, lastTs.toDate().month, lastTs.toDate().day)
-        : null;
-
-    final alreadyToday = lastDay != null && lastDay == today;
-    int currentStreak = data['streak'] ?? 0;
-
-    final Map<String, dynamic> userUpdate = {
-      'totalWaterings': FieldValue.increment(1),
-    };
-
-    if (!alreadyToday) {
-      currentStreak = (lastDay == yesterday) ? currentStreak + 1 : 1;
-      userUpdate['streak'] = currentStreak;
-      userUpdate['lastWateredDate'] = Timestamp.fromDate(now);
-    }
-
-    final batch = _db.batch();
-    batch.update(_plantsRef(userId).doc(plantId), {
-      'lastWatered': Timestamp.fromDate(now),
+    await _plantsRef(userId).doc(plantId).update({
+      'lastWatered': Timestamp.fromDate(today),
       'nextWatering': Timestamp.fromDate(calculateNextWatering(wateringType)),
     });
-    batch.set(userRef, userUpdate, SetOptions(merge: true));
-    await batch.commit();
+
+    // Actualizar contadores
+    final userRef = _db.collection('users').doc(userId);
+    await userRef.set({
+      'totalWaterings': FieldValue.increment(1),
+      'lastWateringDate': Timestamp.fromDate(today),
+    }, SetOptions(merge: true));
+
+    // Guardar historial
+    await _db
+        .collection('users')
+        .doc(userId)
+        .collection('watering_history')
+        .add({'plantId': plantId, 'wateredAt': Timestamp.fromDate(today)});
+
+    // Comprobar si la racha avanza
+    await updateStreak(userId);
+  }
+
+  Future<void> undoWatering(String userId, String plantId) async {
+    await _plantsRef(userId).doc(plantId).update({
+      'lastWatered': null,
+      'nextWatering': Timestamp.fromDate(DateTime.now()),
+    });
+  }
+
+  Future<void> updateStreak(String userId) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+
+    // Obtener todas las plantas
+    final plants = await getMyPlants(userId).first;
+
+    // Plantas que tocaba regar hoy
+    final plantsDueToday = plants.where((plant) {
+      final next = DateTime(
+        plant.nextWatering.year,
+        plant.nextWatering.month,
+        plant.nextWatering.day,
+      );
+      return next.isAtSameMomentAs(today) || next.isBefore(today);
+    }).toList();
+
+    // Si no tocaba regar ninguna hoy, no hacer nada
+    if (plantsDueToday.isEmpty) return;
+
+    // Comprobar si todas las que tocaban han sido regadas hoy
+    final allWatered = plantsDueToday.every((plant) {
+      final lw = plant.lastWatered;
+      if (lw == null) return false;
+      final lwDay = DateTime(lw.year, lw.month, lw.day);
+      return lwDay.isAtSameMomentAs(today);
+    });
+
+    if (!allWatered) return;
+
+    // Todas regadas — actualizar racha
+    final userRef = _db.collection('users').doc(userId);
+    final userDoc = await userRef.get();
+    final data = userDoc.exists
+        ? (userDoc.data() as Map<String, dynamic>)
+        : <String, dynamic>{};
+
+    int streak = data['streak'] ?? 0;
+    final lastStreakDate = data['lastStreakDate'] != null
+        ? (data['lastStreakDate'] as Timestamp).toDate()
+        : null;
+
+    if (lastStreakDate == null) {
+      streak = 1;
+    } else {
+      final lastDay = DateTime(
+        lastStreakDate.year,
+        lastStreakDate.month,
+        lastStreakDate.day,
+      );
+      final diff = today.difference(lastDay).inDays;
+      if (diff == 1) {
+        streak += 1;
+      } else if (diff > 1) {
+        streak = 1;
+      }
+      // diff == 0 ya se contó hoy
+    }
+
+    await userRef.set({
+      'streak': streak,
+      'lastStreakDate': Timestamp.fromDate(today),
+    }, SetOptions(merge: true));
   }
 }

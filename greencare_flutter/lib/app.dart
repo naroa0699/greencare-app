@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
+import 'providers/theme_provider.dart';
 import 'presentation/screens/plant_detail/plant_detail_screen.dart';
 import 'presentation/screens/auth/login_screen.dart';
 import 'presentation/screens/auth/register_screen.dart';
@@ -23,7 +24,6 @@ GoRouter createRouter(AuthProvider authProvider) {
     refreshListenable: authProvider,
     redirect: (context, state) {
       final pathname = state.uri.path;
-
       if (!authProvider.isLoggedIn &&
           pathname != '/login' &&
           pathname != '/register') {
@@ -119,15 +119,19 @@ class _GreenCareAppState extends State<GreenCareApp> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = context.watch<ThemeProvider>();
+
     return ChangeNotifierProvider.value(
       value: _authProvider,
       child: MaterialApp.router(
         title: 'GreenCare',
-        theme: ThemeData(
-          useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF4CAF50)),
+        theme: themeProvider.theme.copyWith(
           appBarTheme: const AppBarTheme(elevation: 0),
         ),
+        darkTheme: themeProvider.darkTheme.copyWith(
+          appBarTheme: const AppBarTheme(elevation: 0),
+        ),
+        themeMode: themeProvider.isDark ? ThemeMode.dark : ThemeMode.light,
         routerConfig: _router,
         debugShowCheckedModeBanner: false,
       ),

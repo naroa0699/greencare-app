@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../providers/auth_provider.dart';
 import '../../../data/repositories/user_plant_repository.dart';
 import '../../../data/models/user_plant_model.dart';
+import '../../../providers/auth_provider.dart' as app_auth;
+import '../../../core/theme/app_themes.dart';
+import '../../../providers/theme_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -35,12 +39,114 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await FirebaseAuth.instance.currentUser?.updateDisplayName(
       _displayNameController.text.trim(),
     );
-    if (mounted) {
-      setState(() => _isEditing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Nombre actualizado ✅')),
-      );
+    if (!mounted) return;
+    // ignore: use_build_context_synchronously
+    await context.read<app_auth.AuthProvider>().reloadUser();
+    if (!mounted) return;
+    setState(() => _isEditing = false);
+    // ignore: use_build_context_synchronously
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Nombre actualizado ✅')));
+  }
+
+  Future<void> _deleteAccount() async {
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Eliminar cuenta'),
+        content: const Text(
+          '¿Seguro que quieres eliminar tu cuenta? Esta acción no se puede deshacer y perderás todas tus plantas y datos.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true) return;
+
+    try {
+      final user = FirebaseAuth.instance.currentUser!;
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .delete();
+      await user.delete();
+      if (mounted) {
+        await context.read<AuthProvider>().signOut();
+      }
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'requires-recent-login' && mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Por seguridad debes volver a iniciar sesión antes de eliminar tu cuenta.',
+            ),
+          ),
+        );
+      }
     }
+  }
+
+  void _showThemeSelector(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) => Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Elige tu tema',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
+              ...AppThemeType.values.map((type) {
+                final isSelected = ctx.watch<ThemeProvider>().themeType == type;
+                return ListTile(
+                  leading: Text(
+                    AppThemes.getEmoji(type),
+                    style: const TextStyle(fontSize: 28),
+                  ),
+                  title: Text(AppThemes.getName(type)),
+                  trailing: isSelected
+                      ? const Icon(Icons.check_circle, color: Colors.green)
+                      : null,
+                  onTap: () {
+                    ctx.read<ThemeProvider>().setTheme(type);
+                    setModalState(() {});
+                  },
+                );
+              }),
+              const Divider(),
+              SwitchListTile(
+                title: const Text('Modo oscuro'),
+                secondary: const Icon(Icons.dark_mode_outlined),
+                value: ctx.watch<ThemeProvider>().isDark,
+                onChanged: (_) {
+                  ctx.read<ThemeProvider>().toggleDark();
+                  setModalState(() {});
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -58,7 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             CircleAvatar(
               radius: 50,
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: Theme.of(context).colorScheme.primary,
               child: Text(
                 (user.displayName?.isNotEmpty == true
                         ? user.displayName!
@@ -74,7 +180,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Nombre editable
             _isEditing
                 ? Row(
                     children: [
@@ -126,42 +231,65 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 24),
 
             // Estadísticas
-            StreamBuilder<List<UserPlantModel>>(
-              stream: repo.getMyPlants(userId),
-              builder: (context, snapshot) {
-                final plants = snapshot.data ?? [];
-                final urgent = plants
-                    .where(
-                      (p) =>
-                          p.nextWatering
-                              .difference(DateTime.now())
-                              .inDays <=
-                          0,
-                    )
-                    .length;
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(userId)
+                  .snapshots(),
+              builder: (context, userSnapshot) {
+                final userData =
+                    userSnapshot.data?.data() as Map<String, dynamic>? ?? {};
+                final streak = userData['streak'] ?? 0;
 
-                return Row(
-                  children: [
-                    _StatCard(
-                      icon: Icons.eco,
-                      label: 'Plantas',
-                      value: '${plants.length}',
-                      color: Colors.green,
-                    ),
-                    const SizedBox(width: 12),
-                    _StatCard(
-                      icon: Icons.water_drop,
-                      label: 'Riegos pendientes',
-                      value: '$urgent',
-                      color: Colors.blue,
-                    ),
-                  ],
+                return StreamBuilder<List<UserPlantModel>>(
+                  stream: repo.getMyPlants(userId),
+                  builder: (context, snapshot) {
+                    final plants = snapshot.data ?? [];
+                    final urgent = plants
+                        .where(
+                          (p) =>
+                              p.nextWatering
+                                  .difference(DateTime.now())
+                                  .inDays <=
+                              0,
+                        )
+                        .length;
+
+                    return Row(
+                      children: [
+                        _StatCard(
+                          icon: Icons.eco,
+                          label: 'Plantas',
+                          value: '${plants.length}',
+                          color: Colors.green,
+                        ),
+                        const SizedBox(width: 8),
+                        _StatCard(
+                          icon: Icons.water_drop,
+                          label: 'Pendientes',
+                          value: '$urgent',
+                          color: Colors.blue,
+                        ),
+                        const SizedBox(width: 8),
+                        _StatCard(
+                          icon: Icons.local_fire_department,
+                          label: 'Racha',
+                          value: '$streak 🔥',
+                          color: Colors.orange,
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
             ),
             const SizedBox(height: 24),
 
-            // Opciones
+            _OptionTile(
+              icon: Icons.palette_outlined,
+              label: 'Personalizar tema',
+              onTap: () => _showThemeSelector(context),
+            ),
             _OptionTile(
               icon: Icons.emoji_events_outlined,
               label: 'Mis logros',
@@ -173,9 +301,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               onTap: () async {
                 final email = user.email;
                 if (email != null) {
-                  await FirebaseAuth.instance
-                      .sendPasswordResetEmail(email: email);
-                  if (!context.mounted) { return; }
+                  await FirebaseAuth.instance.sendPasswordResetEmail(
+                    email: email,
+                  );
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(
@@ -201,6 +330,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ],
               ),
+            ),
+            _OptionTile(
+              icon: Icons.delete_forever_outlined,
+              label: 'Eliminar cuenta',
+              onTap: _deleteAccount,
+              iconColor: Colors.red,
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -242,9 +377,9 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Flexible(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
@@ -252,21 +387,21 @@ class _StatCard extends StatelessWidget {
         ),
         child: Column(
           children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 6),
             Text(
               value,
               style: TextStyle(
-                fontSize: 24,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 2),
             Text(
               label,
               textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 11, color: Colors.grey),
             ),
           ],
         ),
@@ -279,11 +414,13 @@ class _OptionTile extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
+  final Color? iconColor;
 
   const _OptionTile({
     required this.icon,
     required this.label,
     required this.onTap,
+    this.iconColor,
   });
 
   @override
@@ -291,7 +428,10 @@ class _OptionTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF4CAF50)),
+        leading: Icon(
+          icon,
+          color: iconColor ?? Theme.of(context).colorScheme.primary,
+        ),
         title: Text(label),
         trailing: const Icon(Icons.chevron_right, color: Colors.grey),
         onTap: onTap,
