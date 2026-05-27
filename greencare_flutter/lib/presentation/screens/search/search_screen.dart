@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -49,7 +50,6 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _searchPlants(String query) async {
     setState(() => _isLoading = true);
 
-    // Traducir al inglés
     String searchQuery = query;
     try {
       final translated = await ChatbotService().translateToEnglish(query);
@@ -66,7 +66,6 @@ class _SearchScreenState extends State<SearchScreen> {
         final data = json.decode(response.body);
         final plants = List<dynamic>.from(data['data'] ?? []);
 
-        // Enriquecer imágenes con Wikimedia en paralelo
         await Future.wait(
           plants.map((plant) async {
             final img = plant['default_image']?['medium_url'] as String?;
@@ -111,125 +110,138 @@ class _SearchScreenState extends State<SearchScreen> {
     final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Buscar Plantas')),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Busca aloe vera, monstera...',
-                prefixIcon: Icon(Icons.search, color: scheme.primary),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() {
-                            _plants = [];
-                            _hasSearched = false;
-                          });
-                        },
-                      )
-                    : null,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: scheme.outline),
+      appBar: kIsWeb ? null : AppBar(title: const Text('Buscar Plantas')),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Column(
+            children: [
+              if (kIsWeb) const SizedBox(height: 8),
+              Padding(
+                padding: EdgeInsets.fromLTRB(
+                  kIsWeb ? 24 : 16,
+                  12,
+                  kIsWeb ? 24 : 16,
+                  8,
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: scheme.outline.withValues(alpha: 0.5),
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: scheme.primary, width: 2),
-                ),
-                filled: true,
-                fillColor: scheme.surfaceContainerHighest,
-              ),
-              onChanged: (value) {
-                setState(() {});
-                _onSearchChanged(value);
-              },
-            ),
-          ),
-
-          if (_isLoading)
-            LinearProgressIndicator(color: scheme.primary)
-          else
-            const SizedBox(height: 4),
-
-          Expanded(
-            child: !_hasSearched && _plants.isEmpty
-                ? _buildSuggestions(scheme)
-                : _plants.isEmpty
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.search_off,
-                          size: 64,
-                          color: scheme.onSurfaceVariant.withValues(alpha: 0.5),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          'No se encontraron plantas',
-                          style: TextStyle(
-                            color: scheme.onSurfaceVariant,
-                            fontSize: 16,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Prueba con otro nombre',
-                          style: TextStyle(
-                            color: scheme.onSurfaceVariant.withValues(
-                              alpha: 0.7,
-                            ),
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                child: TextField(
+                  controller: _searchController,
+                  decoration: InputDecoration(
+                    hintText: 'Busca aloe vera, monstera...',
+                    prefixIcon: Icon(Icons.search, color: scheme.primary),
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            icon: const Icon(Icons.clear),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() {
+                                _plants = [];
+                                _hasSearched = false;
+                              });
+                            },
+                          )
+                        : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.outline),
                     ),
-                  )
-                : GridView.builder(
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: scheme.outline.withValues(alpha: 0.5),
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: scheme.primary, width: 2),
+                    ),
+                    filled: true,
+                    fillColor: scheme.surfaceContainerHighest,
+                  ),
+                  onChanged: (value) {
+                    setState(() {});
+                    _onSearchChanged(value);
+                  },
+                ),
+              ),
+
+              if (_isLoading)
+                LinearProgressIndicator(color: scheme.primary)
+              else
+                const SizedBox(height: 4),
+
+              Expanded(
+                child: !_hasSearched && _plants.isEmpty
+                    ? _buildSuggestions(scheme)
+                    : _plants.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 64,
+                              color: scheme.onSurfaceVariant.withValues(
+                                alpha: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No se encontraron plantas',
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Prueba con otro nombre',
+                              style: TextStyle(
+                                color: scheme.onSurfaceVariant.withValues(
+                                  alpha: 0.7,
+                                ),
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : GridView.builder(
+                        padding: EdgeInsets.all(kIsWeb ? 24 : 16),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: kIsWeb ? 4 : 2,
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
-                          childAspectRatio: 0.8,
+                          childAspectRatio: kIsWeb ? 0.75 : 0.8,
                         ),
-                    itemCount: _plants.length,
-                    itemBuilder: (context, index) {
-                      final plant = _plants[index];
-                      return _PlantCard(
-                        plant: plant,
-                        onTap: () => context.push('/details/${plant['id']}'),
-                      );
-                    },
-                  ),
+                        itemCount: _plants.length,
+                        itemBuilder: (context, index) {
+                          final plant = _plants[index];
+                          return _PlantCard(
+                            plant: plant,
+                            onTap: () =>
+                                context.push('/details/${plant['id']}'),
+                          );
+                        },
+                      ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildSuggestions(ColorScheme scheme) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(kIsWeb ? 24 : 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             '🌱 Búsquedas populares',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: kIsWeb ? 18 : 16,
               fontWeight: FontWeight.bold,
               color: scheme.onSurface,
             ),
@@ -255,7 +267,7 @@ class _SearchScreenState extends State<SearchScreen> {
           Text(
             '💡 Consejo',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: kIsWeb ? 18 : 16,
               fontWeight: FontWeight.bold,
               color: scheme.onSurface,
             ),

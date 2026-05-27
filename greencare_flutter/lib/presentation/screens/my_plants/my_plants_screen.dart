@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
 import '../../../data/repositories/user_plant_repository.dart';
@@ -12,61 +13,84 @@ class MyPlantsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser!.uid;
     final repo = UserPlantRepository();
+    final scheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Mis Plantas')),
-      floatingActionButton: FloatingActionButton(
+      appBar: kIsWeb ? null : AppBar(title: const Text('Mis Plantas')),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push('/search'),
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('Añadir planta'),
       ),
-      body: StreamBuilder<List<UserPlantModel>>(
-        stream: repo.getMyPlants(userId),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: StreamBuilder<List<UserPlantModel>>(
+            stream: repo.getMyPlants(userId),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-          if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+              if (snapshot.hasError) {
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
 
-          final plants = snapshot.data ?? [];
-          if (plants.isEmpty) {
-            return const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.eco_outlined, size: 80, color: Colors.grey),
-                  SizedBox(height: 16),
-                  Text(
-                    'Aún no tienes plantas',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
+              final plants = snapshot.data ?? [];
+              if (plants.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.eco_outlined,
+                        size: 80,
+                        color: scheme.onSurfaceVariant.withValues(alpha: 0.4),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Aún no tienes plantas',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: scheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Pulsa + para añadir una',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: scheme.onSurfaceVariant.withValues(alpha: 0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: () => context.push('/search'),
+                        icon: const Icon(Icons.search),
+                        label: const Text('Buscar plantas'),
+                      ),
+                    ],
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    'Pulsa + para añadir una',
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  ),
-                ],
-              ),
-            );
-          }
+                );
+              }
 
-          return GridView.builder(
-            padding: const EdgeInsets.all(16),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 0.85,
-            ),
-            itemCount: plants.length,
-            itemBuilder: (context, index) {
-              final plant = plants[index];
-              return _PlantCard(plant: plant, userId: userId, repo: repo);
+              return GridView.builder(
+                padding: EdgeInsets.all(kIsWeb ? 24 : 16),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: kIsWeb ? 4 : 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: kIsWeb ? 0.75 : 0.85,
+                ),
+                itemCount: plants.length,
+                itemBuilder: (context, index) {
+                  final plant = plants[index];
+                  return _PlantCard(plant: plant, userId: userId, repo: repo);
+                },
+              );
             },
-          );
-        },
+          ),
+        ),
       ),
     );
   }
@@ -85,6 +109,7 @@ class _PlantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final daysLeft = plant.nextWatering.difference(DateTime.now()).inDays;
     final needsWater = daysLeft <= 0;
 
@@ -106,6 +131,7 @@ class _PlantCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Imagen
             Expanded(
               child: Stack(
                 fit: StackFit.expand,
@@ -114,10 +140,27 @@ class _PlantCard extends StatelessWidget {
                       ? Image.network(
                           plant.imageUrl!,
                           fit: BoxFit.cover,
-                          errorBuilder: (context, error, stack) =>
-                              const Icon(Icons.eco, size: 60),
+                          errorBuilder: (context, error, stack) => Container(
+                            color: scheme.primaryContainer,
+                            child: Center(
+                              child: Icon(
+                                Icons.eco,
+                                size: 60,
+                                color: scheme.primary,
+                              ),
+                            ),
+                          ),
                         )
-                      : const Icon(Icons.eco, size: 60),
+                      : Container(
+                          color: scheme.primaryContainer,
+                          child: Center(
+                            child: Icon(
+                              Icons.eco,
+                              size: 60,
+                              color: scheme.primary,
+                            ),
+                          ),
+                        ),
                   if (needsWater && !wateredToday)
                     Positioned(
                       top: 8,
@@ -128,7 +171,7 @@ class _PlantCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.blue,
+                          color: scheme.primary,
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: const Row(
@@ -183,6 +226,8 @@ class _PlantCard extends StatelessWidget {
                 ],
               ),
             ),
+
+            // Info
             Padding(
               padding: const EdgeInsets.fromLTRB(8, 8, 8, 4),
               child: Column(
@@ -190,7 +235,10 @@ class _PlantCard extends StatelessWidget {
                 children: [
                   Text(
                     plant.nickname ?? plant.commonName,
-                    style: const TextStyle(fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: scheme.onSurface,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -206,13 +254,15 @@ class _PlantCard extends StatelessWidget {
                       color: wateredToday
                           ? Colors.green
                           : needsWater
-                          ? Colors.blue
-                          : Colors.grey,
+                          ? scheme.primary
+                          : scheme.onSurfaceVariant,
                     ),
                   ),
                 ],
               ),
             ),
+
+            // Botones
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               child: Row(
@@ -251,10 +301,10 @@ class _PlantCard extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         decoration: BoxDecoration(
                           color: wateredToday
-                              ? Colors.grey.shade200
+                              ? scheme.surfaceContainerHighest
                               : needsWater
-                              ? Colors.blue
-                              : Colors.blue.withValues(alpha: 0.1),
+                              ? scheme.primary
+                              : scheme.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Row(
@@ -264,10 +314,10 @@ class _PlantCard extends StatelessWidget {
                               wateredToday ? Icons.check : Icons.water_drop,
                               size: 14,
                               color: wateredToday
-                                  ? Colors.grey
+                                  ? scheme.onSurfaceVariant
                                   : needsWater
-                                  ? Colors.white
-                                  : Colors.blue,
+                                  ? scheme.onPrimary
+                                  : scheme.primary,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -280,10 +330,10 @@ class _PlantCard extends StatelessWidget {
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                                 color: wateredToday
-                                    ? Colors.grey
+                                    ? scheme.onSurfaceVariant
                                     : needsWater
-                                    ? Colors.white
-                                    : Colors.blue,
+                                    ? scheme.onPrimary
+                                    : scheme.primary,
                               ),
                             ),
                           ],
