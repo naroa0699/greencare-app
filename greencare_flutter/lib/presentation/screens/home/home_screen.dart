@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:tabler_icons/tabler_icons.dart';
 import '../../../providers/auth_provider.dart' as app_auth;
 import '../../../data/repositories/user_plant_repository.dart';
 import '../../../data/models/user_plant_model.dart';
@@ -37,7 +38,14 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: kIsWeb
           ? null
           : AppBar(
-              title: const Text('🌿 GreenCare'),
+              title: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(TablerIcons.leaf, size: 22),
+                  SizedBox(width: 6),
+                  Text('GreenCare'),
+                ],
+              ),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.person_outline),
@@ -130,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Text('🔥', style: TextStyle(fontSize: 20)),
+                              Icon(TablerIcons.flame, color: Colors.orange, size: 22),
                               const SizedBox(width: 8),
                               Text(
                                 '¡Llevas $streak día${streak == 1 ? '' : 's'} de racha!',
@@ -172,13 +180,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 28),
 
-                    Text(
-                      '💧 Necesitan agua hoy',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: scheme.onSurface,
-                      ),
+                    Row(
+                      children: [
+                        Icon(TablerIcons.droplet, color: scheme.secondary, size: 22),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Necesitan agua hoy',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: scheme.onSurface,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     if (urgent.isEmpty)
@@ -190,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(Icons.check_circle, color: scheme.primary),
+                            Icon(TablerIcons.circle_check, color: scheme.primary),
                             const SizedBox(width: 8),
                             const Expanded(
                               child: Text(
@@ -217,13 +231,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
-                          '🪴 Mis plantas',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: scheme.onSurface,
-                          ),
+                        Row(
+                          children: [
+                            Icon(TablerIcons.plant, color: scheme.primary, size: 22),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Mis plantas',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                          ],
                         ),
                         TextButton(
                           onPressed: () => context.go('/my-plants'),
@@ -282,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               child: Row(
                                 children: [
                                   Icon(
-                                    Icons.eco,
+                                    TablerIcons.plant,
                                     color: scheme.primary,
                                     size: 32,
                                   ),
@@ -394,7 +414,7 @@ class _UrgentPlantChip extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.water_drop, color: scheme.secondary, size: 28),
+          Icon(TablerIcons.droplet, color: scheme.secondary, size: 28),
           const SizedBox(height: 6),
           Text(
             plant.nickname ?? plant.commonName,
