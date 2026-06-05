@@ -90,6 +90,41 @@ app.post("/api/translate", async (req, res) => {
   }
 });
 
+// --- NUEVO: datos meteorologicos via Open-Meteo (gratis, sin API key) ---
+// Se usa para ajustar la frecuencia de riego segun el tiempo en la
+// ubicacion de cada planta. Requiere Node 18+ (fetch global).
+app.post("/api/weather", async (req, res) => {
+  const { lat, lon } = req.body;
+
+  if (lat == null || lon == null) {
+    return res.status(400).json({ error: "lat y lon son obligatorios" });
+  }
+
+  try {
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,relative_humidity_2m` +
+      `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum` +
+      `&timezone=auto&forecast_days=1`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Open-Meteo respondio ${response.status}`);
+    }
+    const data = await response.json();
+
+    res.json({
+      maxTemp: data.daily.temperature_2m_max[0],
+      minTemp: data.daily.temperature_2m_min[0],
+      humidity: data.current.relative_humidity_2m,
+      precipitationMm: data.daily.precipitation_sum[0],
+    });
+  } catch (error) {
+    console.error("Weather error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 app.listen(process.env.PORT, () => {

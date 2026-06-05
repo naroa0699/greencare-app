@@ -121,7 +121,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
       final plant = UserPlantModel(
         id: _plant!['id'].toString(),
         commonName: _plant!['common_name'] ?? 'Sin nombre',
-        imageUrl: _plant!['default_image']?['medium_url'],
+        imageUrl: _plant!['default_image']?['original_url'],
         watering: _plant!['watering'] ?? 'Average',
         addedAt: DateTime.now(),
         nextWatering: calculateNextWatering(_plant!['watering'] ?? 'Average'),

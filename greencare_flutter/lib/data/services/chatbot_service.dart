@@ -76,7 +76,7 @@ class ChatbotService {
     try {
       final response = await http
           .post(
-            Uri.parse('http://192.168.0.21:3000/api/translate'),
+            Uri.parse('$backendBaseUrl/api/translate'),
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode({'text': text}),
           )
