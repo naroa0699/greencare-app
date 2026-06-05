@@ -78,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     if (!kIsWeb) ...[
                       Text(
-                        'Hola, ${user.displayName?.isNotEmpty == true ? user.displayName! : user.email?.split('@').first ?? 'usuaria'} 👋',
+                        'Hola, ${user.displayName?.isNotEmpty == true ? user.displayName! : user.email?.split('@').first ?? 'usuaria'}',
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -92,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 8),
                     ] else ...[
                       Text(
-                        'Bienvenida, ${user.displayName?.isNotEmpty == true ? user.displayName! : user.email?.split('@').first ?? 'usuaria'} 👋',
+                        'Bienvenida, ${user.displayName?.isNotEmpty == true ? user.displayName! : user.email?.split('@').first ?? 'usuaria'}',
                         style: const TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.bold,

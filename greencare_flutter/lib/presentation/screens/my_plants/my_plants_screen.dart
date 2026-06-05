@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../data/repositories/user_plant_repository.dart';
 import '../../../data/models/user_plant_model.dart';
 import '../../../data/services/notification_service.dart';
+import '../../../data/services/weather_service.dart';
+import '../../../core/constants/care_schedule.dart';
 
 class MyPlantsScreen extends StatelessWidget {
   const MyPlantsScreen({super.key});
@@ -272,10 +274,20 @@ class _PlantCard extends StatelessWidget {
                       onTap: wateredToday
                           ? null
                           : () async {
+                              // Ajuste por clima si la planta tiene ubicacion
+                              WeatherData? weather;
+                              if (plant.latitude != null &&
+                                  plant.longitude != null) {
+                                weather = await WeatherService().getWeather(
+                                  plant.latitude!,
+                                  plant.longitude!,
+                                );
+                              }
                               await repo.waterPlant(
                                 userId,
                                 plant.id,
                                 plant.watering,
+                                weather: weather,
                               );
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(

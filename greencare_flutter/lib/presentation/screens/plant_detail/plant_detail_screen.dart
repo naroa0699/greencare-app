@@ -8,6 +8,8 @@ import '../../../data/repositories/user_plant_repository.dart';
 import '../../../data/models/user_plant_model.dart';
 import '../../../core/constants/care_schedule.dart';
 import '../../../data/services/chatbot_service.dart';
+import '../../../data/services/weather_service.dart';
+import '../../../data/services/location_service.dart';
 
 class PlantDetailScreen extends StatefulWidget {
   final int plantId;
@@ -24,6 +26,8 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
   bool _isAdding = false;
   bool _wateredToday = false;
   DateTime? _lastWatered;
+  double? _latitude;
+  double? _longitude;
 
   @override
   void initState() {
@@ -95,11 +99,15 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
             .toList();
         final alreadyAdded = match.isNotEmpty;
         final lastWatered = alreadyAdded ? match.first.lastWatered : null;
+        final lat = alreadyAdded ? match.first.latitude : null;
+        final lon = alreadyAdded ? match.first.longitude : null;
 
         setState(() {
           _plant = data;
           _alreadyAdded = alreadyAdded;
           _lastWatered = lastWatered;
+          _latitude = lat;
+          _longitude = lon;
           _wateredToday = _isWateredToday(lastWatered);
         });
       }
@@ -118,13 +126,19 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
       final userId = FirebaseAuth.instance.currentUser!.uid;
       final repo = UserPlantRepository();
 
+      // Ubicacion de la planta para el clima (puede ser null si no hay permiso)
+      final pos = await LocationService().getCurrentPosition();
+
       final plant = UserPlantModel(
         id: _plant!['id'].toString(),
         commonName: _plant!['common_name'] ?? 'Sin nombre',
         imageUrl: _plant!['default_image']?['original_url'],
         watering: _plant!['watering'] ?? 'Average',
+        sunlight: (_plant!['sunlight'] as List?)?.first?.toString(),
         addedAt: DateTime.now(),
         nextWatering: calculateNextWatering(_plant!['watering'] ?? 'Average'),
+        latitude: pos?.latitude,
+        longitude: pos?.longitude,
       );
 
       await repo.addPlant(userId, plant);
@@ -134,6 +148,8 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
           _alreadyAdded = true;
           _isAdding = false;
           _wateredToday = false;
+          _latitude = pos?.latitude;
+          _longitude = pos?.longitude;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('¡Planta añadida a tu colección! 🌿')),
@@ -153,10 +169,17 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
 
     setState(() => _wateredToday = true);
 
+    // Si la planta tiene ubicacion, ajustamos el riego segun el tiempo
+    WeatherData? weather;
+    if (_latitude != null && _longitude != null) {
+      weather = await WeatherService().getWeather(_latitude!, _longitude!);
+    }
+
     await repo.waterPlant(
       userId,
       _plant!['id'].toString(),
       _plant!['watering'] ?? 'Average',
+      weather: weather,
     );
 
     if (mounted) {

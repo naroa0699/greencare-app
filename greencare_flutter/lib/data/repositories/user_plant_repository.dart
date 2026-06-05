@@ -34,17 +34,23 @@ class UserPlantRepository {
     ).doc(plantId).update({'nextWatering': Timestamp.fromDate(date)});
   }
 
+  /// Registra un riego. Si se pasa [weather], la proxima fecha de riego se
+  /// ajusta segun el tiempo de la ubicacion de la planta. Si es null, se usa
+  /// el intervalo base de Perenual (comportamiento anterior intacto).
   Future<void> waterPlant(
     String userId,
     String plantId,
-    String wateringType,
-  ) async {
+    String wateringType, {
+    WeatherData? weather,
+  }) async {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
     await _plantsRef(userId).doc(plantId).update({
       'lastWatered': Timestamp.fromDate(today),
-      'nextWatering': Timestamp.fromDate(calculateNextWatering(wateringType)),
+      'nextWatering': Timestamp.fromDate(
+        calculateNextWatering(wateringType, weather: weather),
+      ),
     });
 
     // Actualizar contadores
@@ -69,6 +75,22 @@ class UserPlantRepository {
     await _plantsRef(userId).doc(plantId).update({
       'lastWatered': null,
       'nextWatering': Timestamp.fromDate(DateTime.now()),
+    });
+  }
+
+  /// Registra un abonado y programa el siguiente. Por defecto cada 30 dias.
+  Future<void> fertilizePlant(
+    String userId,
+    String plantId, {
+    int everyDays = 30,
+  }) async {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    await _plantsRef(userId).doc(plantId).update({
+      'lastFertilized': Timestamp.fromDate(today),
+      'nextFertilizing': Timestamp.fromDate(
+        today.add(Duration(days: everyDays)),
+      ),
     });
   }
 

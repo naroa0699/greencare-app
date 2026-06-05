@@ -41,8 +41,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
         .doc(_userId)
         .snapshots()
         .listen((doc) {
-      if (mounted) setState(() => _userData = doc.data() ?? {});
-    });
+          if (mounted) setState(() => _userData = doc.data() ?? {});
+        });
 
     _plantsSub = UserPlantRepository().getMyPlants(_userId).listen((plants) {
       if (mounted) setState(() => _plants = plants);
@@ -57,13 +57,27 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
     return allAchievements.map((a) {
       bool unlocked = false;
       switch (a.id) {
-        case 'first_plant':  unlocked = _plants.isNotEmpty; break;
-        case 'five_plants':  unlocked = _plants.length >= 5; break;
-        case 'first_water':  unlocked = totalWaterings >= 1; break;
-        case 'streak_3':     unlocked = streak >= 3; break;
-        case 'streak_7':     unlocked = streak >= 7; break;
-        case 'streak_30':    unlocked = streak >= 30; break;
-        case 'forum_post':   unlocked = forumPosts >= 1; break;
+        case 'first_plant':
+          unlocked = _plants.isNotEmpty;
+          break;
+        case 'five_plants':
+          unlocked = _plants.length >= 5;
+          break;
+        case 'first_water':
+          unlocked = totalWaterings >= 1;
+          break;
+        case 'streak_3':
+          unlocked = streak >= 3;
+          break;
+        case 'streak_7':
+          unlocked = streak >= 7;
+          break;
+        case 'streak_30':
+          unlocked = streak >= 30;
+          break;
+        case 'forum_post':
+          unlocked = forumPosts >= 1;
+          break;
       }
       return a.copyWith(unlocked: unlocked);
     }).toList();
@@ -85,7 +99,8 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
               color: const Color(0xFF4CAF50).withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                  color: const Color(0xFF4CAF50).withValues(alpha: 0.3)),
+                color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+              ),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -95,7 +110,9 @@ class _AchievementsScreenState extends State<AchievementsScreen> {
                 Text(
                   '$unlocked / ${achievements.length} logros desbloqueados',
                   style: const TextStyle(
-                      fontSize: 16, fontWeight: FontWeight.bold),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),

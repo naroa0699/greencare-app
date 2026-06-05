@@ -21,7 +21,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     // Mensaje de bienvenida
     _messages.add({
       'role': 'assistant',
-      'content': '¡Hola! Soy GreenBot 🌿 Tu experto botánico personal. '
+      'content':
+          '¡Hola! Soy GreenBot 🌿 Tu experto botánico personal. '
           '¿En qué puedo ayudarte hoy?',
     });
   }
@@ -35,7 +36,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
 
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
-    if (text.isEmpty || _isLoading) { return; }
+    if (text.isEmpty || _isLoading) {
+      return;
+    }
 
     setState(() {
       _messages.add({'role': 'user', 'content': text});
@@ -53,7 +56,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       setState(() {
         _messages.add({
           'role': 'assistant',
-          'content': 'Lo siento, no pude conectar con el servidor. '
+          'content':
+              'Lo siento, no pude conectar con el servidor. '
               'Asegúrate de que el backend está corriendo.',
         });
       });
@@ -114,8 +118,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 children: [
                   Icon(Icons.smart_toy, color: Colors.green, size: 20),
                   SizedBox(width: 8),
-                  Text('GreenBot está escribiendo...',
-                      style: TextStyle(color: Colors.grey, fontSize: 13)),
+                  Text(
+                    'GreenBot está escribiendo...',
+                    style: TextStyle(color: Colors.grey, fontSize: 13),
+                  ),
                 ],
               ),
             ),
@@ -130,7 +136,9 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
             decoration: BoxDecoration(
               color: Theme.of(context).cardColor,
-              boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 4)],
+              boxShadow: const [
+                BoxShadow(color: Colors.black12, blurRadius: 4),
+              ],
             ),
             child: Row(
               children: [
@@ -141,8 +149,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                     decoration: const InputDecoration(
                       hintText: 'Pregunta sobre tus plantas...',
                       border: OutlineInputBorder(),
-                      contentPadding:
-                          EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
                     ),
                     onSubmitted: (_) => _sendMessage(),
                   ),

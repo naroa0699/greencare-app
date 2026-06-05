@@ -33,9 +33,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     try {
       await context.read<AuthProvider>().signUpWithEmail(
-            _emailController.text.trim(),
-            _passwordController.text.trim(),
-          );
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+      );
       // GoRouter redirige automáticamente a /home
     } catch (e) {
       if (mounted) {
@@ -52,10 +52,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String _parseError(String error) {
-    if (error.contains('email-already-in-use')) return 'Ya existe una cuenta con ese email.';
+    if (error.contains('email-already-in-use'))
+      return 'Ya existe una cuenta con ese email.';
     if (error.contains('invalid-email')) return 'El email no es válido.';
-    if (error.contains('weak-password')) return 'La contraseña es demasiado débil.';
-    if (error.contains('network-request-failed')) return 'Sin conexión a internet.';
+    if (error.contains('weak-password'))
+      return 'La contraseña es demasiado débil.';
+    if (error.contains('network-request-failed'))
+      return 'Sin conexión a internet.';
     return 'Error al registrarse. Inténtalo de nuevo.';
   }
 
@@ -75,10 +78,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 12),
                   const Text(
                     'Crear cuenta',
-                    style: TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8),
                   const Text(
@@ -97,7 +97,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) return 'Introduce tu email.';
+                      if (value == null || value.isEmpty)
+                        return 'Introduce tu email.';
                       if (!value.contains('@')) return 'Email no válido.';
                       return null;
                     },
@@ -118,12 +119,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ? Icons.visibility_outlined
                               : Icons.visibility_off_outlined,
                         ),
-                        onPressed: () =>
-                            setState(() => _obscurePassword = !_obscurePassword),
+                        onPressed: () => setState(
+                          () => _obscurePassword = !_obscurePassword,
+                        ),
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) return 'Introduce una contraseña.';
+                      if (value == null || value.isEmpty)
+                        return 'Introduce una contraseña.';
                       if (value.length < 6) return 'Mínimo 6 caracteres.';
                       return null;
                     },
@@ -140,8 +143,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty) return 'Confirma tu contraseña.';
-                      if (value != _passwordController.text) return 'Las contraseñas no coinciden.';
+                      if (value == null || value.isEmpty)
+                        return 'Confirma tu contraseña.';
+                      if (value != _passwordController.text)
+                        return 'Las contraseñas no coinciden.';
                       return null;
                     },
                   ),
@@ -166,7 +171,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 color: Colors.white,
                               ),
                             )
-                          : const Text('Crear cuenta', style: TextStyle(fontSize: 16)),
+                          : const Text(
+                              'Crear cuenta',
+                              style: TextStyle(fontSize: 16),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 16),
