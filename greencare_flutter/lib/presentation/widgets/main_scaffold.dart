@@ -205,7 +205,7 @@ class _WebLayout extends StatelessWidget {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          '${AppThemes.getEmoji(themeProvider.themeType)} ${AppThemes.getName(themeProvider.themeType)}',
+                          AppThemes.getName(themeProvider.themeType),
                           style: TextStyle(
                             fontSize: 12,
                             color: scheme.onSurfaceVariant,
@@ -354,16 +354,16 @@ class _WebLayout extends StatelessWidget {
 
   String _getTitle(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
-    if (location.startsWith('/home')) return '🌿 Inicio';
-    if (location.startsWith('/my-plants')) return '🪴 Mis plantas';
-    if (location.startsWith('/search')) return '🔍 Buscar plantas';
-    if (location.startsWith('/calendar')) return '📅 Calendario';
-    if (location.startsWith('/forum')) return '💬 Comunidad';
-    if (location.startsWith('/chatbot')) return '🤖 GreenBot';
-    if (location.startsWith('/profile')) return '👤 Mi perfil';
-    if (location.startsWith('/settings')) return '⚙️ Ajustes';
-    if (location.startsWith('/achievements')) return '🏆 Logros';
-    return '🌿 GreenCare';
+    if (location.startsWith('/home')) return 'Inicio';
+    if (location.startsWith('/my-plants')) return 'Mis plantas';
+    if (location.startsWith('/search')) return 'Buscar plantas';
+    if (location.startsWith('/calendar')) return 'Calendario';
+    if (location.startsWith('/forum')) return 'Comunidad';
+    if (location.startsWith('/chatbot')) return 'GreenBot';
+    if (location.startsWith('/profile')) return 'Mi perfil';
+    if (location.startsWith('/settings')) return 'Ajustes';
+    if (location.startsWith('/achievements')) return 'Logros';
+    return 'GreenCare';
   }
 }
 
