@@ -1,0 +1,87 @@
+{
+  "@@locale": "fr",
+  "appTitle": "GreenCare",
+  "home": "Accueil",
+  "myPlants": "Mes plantes",
+  "calendar": "Calendrier",
+  "community": "Communauté",
+  "greenbot": "GreenBot",
+  "search": "Rechercher des plantes",
+  "searchHint": "Rechercher aloe vera, monstera...",
+  "addPlant": "Ajouter une plante",
+  "addToCollection": "Ajouter à mes plantes",
+  "alreadyAdded": "Déjà dans votre collection",
+  "waterPlant": "Arroser",
+  "wateredToday": "Déjà arrosée aujourd'hui",
+  "waterNow": "Arroser maintenant!",
+  "undo": "Annuler",
+  "delete": "Supprimer",
+  "cancel": "Annuler",
+  "confirm": "Confirmer",
+  "deletePlant": "Supprimer la plante",
+  "deletePlantConfirm": "Voulez-vous vraiment supprimer cette plante?",
+  "newPost": "Nouvelle publication",
+  "publish": "Publier",
+  "postTitle": "Titre",
+  "postContent": "Contenu",
+  "postTitleHint": "Ex: Comment entretenir mon monstera?",
+  "postContentHint": "Dites-nous en plus...",
+  "viewThread": "Voir le fil",
+  "reply": "Réponse",
+  "replyHint": "Écrire une réponse...",
+  "noPlants": "Pas encore de plantes",
+  "noPlantsHint": "Appuyez sur + pour en ajouter une",
+  "needsWaterToday": "A besoin d'eau aujourd'hui",
+  "waterInDays": "Arroser dans {days} jours",
+  "@waterInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "wateredPlant": "{name} arrosée 💧",
+  "@wateredPlant": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "streak": "{days} jour{plural} de série!",
+  "@streak": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "plural": { "type": "String" }
+    }
+  },
+  "settings": "Paramètres",
+  "darkMode": "Mode sombre",
+  "theme": "Thème de couleur",
+  "language": "Langue",
+  "profile": "Mon profil",
+  "logout": "Se déconnecter",
+  "deleteAccount": "Supprimer le compte",
+  "careCalendar": "Calendrier de soins",
+  "noWateringToday": "Tout va bien! Aucune plante n'a besoin d'eau aujourd'hui.",
+  "popularSearches": "Recherches populaires",
+  "tip": "Conseil",
+  "searchTip": "Recherchez par nom commun ou scientifique. Si les données ne sont pas disponibles, GreenBot les complétera automatiquement.",
+  "watering": "Arrosage",
+  "light": "Lumière",
+  "cycle": "Cycle",
+  "description": "Description",
+  "care": "Soins",
+  "achievements": "Succès",
+  "hello": "Bonjour, {name} 👋",
+  "@hello": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "howAreYourPlants": "Comment vont vos plantes aujourd'hui?",
+  "needWaterToday": "💧 Besoin d'eau aujourd'hui",
+  "plantAdded": "Plante ajoutée à votre collection! 🌿",
+  "beFirstToPost": "Soyez le premier à publier! 🌿",
+  "shareWithCommunity": "Partagez vos plantes et questions avec la communauté",
+  "selectPost": "Sélectionnez une publication",
+  "orCreateNew": "ou créez-en une nouvelle pour commencer",
+  "replies": "Réponses",
+  "beFirstToReply": "Soyez le premier à répondre"
+}

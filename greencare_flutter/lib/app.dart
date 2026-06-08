@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:greencare_flutter/l10n/app_localizations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
@@ -130,6 +132,13 @@ class _GreenCareAppState extends State<GreenCareApp> {
       value: _authProvider,
       child: MaterialApp.router(
         title: 'GreenCare',
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [Locale('es'), Locale('en'), Locale('fr')],
         theme: themeProvider.theme.copyWith(
           appBarTheme: const AppBarTheme(elevation: 0),
         ),

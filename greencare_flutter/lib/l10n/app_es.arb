@@ -1,0 +1,87 @@
+{
+  "@@locale": "es",
+  "appTitle": "GreenCare",
+  "home": "Inicio",
+  "myPlants": "Mis plantas",
+  "calendar": "Calendario",
+  "community": "Comunidad",
+  "greenbot": "GreenBot",
+  "search": "Buscar plantas",
+  "searchHint": "Busca aloe vera, monstera...",
+  "addPlant": "Añadir planta",
+  "addToCollection": "Añadir a Mis Plantas",
+  "alreadyAdded": "Ya añadida a tu colección",
+  "waterPlant": "Regar",
+  "wateredToday": "Ya regada hoy",
+  "waterNow": "¡Regar!",
+  "undo": "Deshacer",
+  "delete": "Eliminar",
+  "cancel": "Cancelar",
+  "confirm": "Confirmar",
+  "deletePlant": "Eliminar planta",
+  "deletePlantConfirm": "¿Seguro que quieres eliminar esta planta?",
+  "newPost": "Nueva publicación",
+  "publish": "Publicar",
+  "postTitle": "Título",
+  "postContent": "Contenido",
+  "postTitleHint": "Ej: ¿Cómo cuido mi monstera?",
+  "postContentHint": "Cuéntanos más...",
+  "viewThread": "Ver hilo",
+  "reply": "Respuesta",
+  "replyHint": "Escribe una respuesta...",
+  "noPlants": "Aún no tienes plantas",
+  "noPlantsHint": "Pulsa + para añadir una",
+  "needsWaterToday": "Necesita agua hoy",
+  "waterInDays": "Regar en {days} días",
+  "@waterInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "wateredPlant": "{name} regada 💧",
+  "@wateredPlant": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "streak": "¡Llevas {days} día{plural} de racha!",
+  "@streak": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "plural": { "type": "String" }
+    }
+  },
+  "settings": "Ajustes",
+  "darkMode": "Modo oscuro",
+  "theme": "Tema de color",
+  "language": "Idioma",
+  "profile": "Mi perfil",
+  "logout": "Cerrar sesión",
+  "deleteAccount": "Eliminar cuenta",
+  "careCalendar": "Calendario de cuidados",
+  "noWateringToday": "¡Todo en orden! Ninguna planta necesita agua hoy.",
+  "popularSearches": "Búsquedas populares",
+  "tip": "Consejo",
+  "searchTip": "Busca por nombre común o científico. Si los datos no están disponibles, GreenBot los completará automáticamente.",
+  "watering": "Riego",
+  "light": "Luz",
+  "cycle": "Ciclo",
+  "description": "Descripción",
+  "care": "Cuidados",
+  "achievements": "Logros",
+  "hello": "Hola, {name} 👋",
+  "@hello": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "howAreYourPlants": "¿Cómo están tus plantas hoy?",
+  "needWaterToday": "💧 Necesitan agua hoy",
+  "plantAdded": "¡Planta añadida a tu colección! 🌿",
+  "beFirstToPost": "¡Sé el primero en publicar! 🌿",
+  "shareWithCommunity": "Comparte tus plantas y dudas con la comunidad",
+  "selectPost": "Selecciona una publicación",
+  "orCreateNew": "o crea una nueva para empezar",
+  "replies": "Respuestas",
+  "beFirstToReply": "Sé el primero en responder"
+}

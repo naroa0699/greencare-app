@@ -25,7 +25,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Sección apariencia
           _SectionHeader(title: '🎨 Apariencia', scheme: scheme),
           const SizedBox(height: 8),
           Card(
@@ -43,20 +42,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   value: themeProvider.isDark,
                   onChanged: (_) => themeProvider.toggleDark(),
                 ),
-                Divider(
-                  height: 1,
-                  color: scheme.outline.withValues(alpha: 0.2),
-                ),
+                Divider(height: 1, color: scheme.outline.withValues(alpha: 0.2)),
                 ListTile(
                   leading: Icon(Icons.palette_outlined, color: scheme.primary),
                   title: const Text('Paleta de colores'),
                   subtitle: Text(
                     '${AppThemes.getEmoji(themeProvider.themeType)} ${AppThemes.getName(themeProvider.themeType)}',
                   ),
-                  trailing: Icon(
-                    Icons.chevron_right,
-                    color: scheme.onSurfaceVariant,
-                  ),
+                  trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
                   onTap: () => _showThemeSelector(context, themeProvider),
                 ),
               ],
@@ -64,7 +57,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Sección notificaciones
           _SectionHeader(title: '🔔 Notificaciones', scheme: scheme),
           const SizedBox(height: 8),
           Card(
@@ -75,60 +67,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   subtitle: const Text(
                     'Recibe avisos cuando tus plantas necesiten agua',
                   ),
-                  secondary: Icon(
-                    Icons.water_drop_outlined,
-                    color: scheme.primary,
-                  ),
+                  secondary: Icon(Icons.water_drop_outlined, color: scheme.primary),
                   value: _notificationsEnabled,
                   onChanged: (value) =>
                       setState(() => _notificationsEnabled = value),
                 ),
-                Divider(
-                  height: 1,
-                  color: scheme.outline.withValues(alpha: 0.2),
-                ),
+                Divider(height: 1, color: scheme.outline.withValues(alpha: 0.2)),
                 ListTile(
                   leading: Icon(Icons.schedule, color: scheme.primary),
                   title: const Text('Hora del recordatorio'),
                   subtitle: Text(
                     '${_reminderTime.hour.toString().padLeft(2, '0')}:${_reminderTime.minute.toString().padLeft(2, '0')}',
                   ),
-                  trailing: Icon(
-                    Icons.chevron_right,
-                    color: scheme.onSurfaceVariant,
-                  ),
-                  onTap: _notificationsEnabled
-                      ? () => _pickTime(context)
-                      : null,
+                  trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
+                  onTap: _notificationsEnabled ? () => _pickTime(context) : null,
                 ),
               ],
             ),
           ),
           const SizedBox(height: 20),
 
-          // Sección demo
           _SectionHeader(title: '🧪 Demo', scheme: scheme),
           const SizedBox(height: 8),
           Card(
             child: ListTile(
-              leading: Icon(
-                Icons.notifications_active_outlined,
-                color: scheme.primary,
-              ),
+              leading: Icon(Icons.notifications_active_outlined, color: scheme.primary),
               title: const Text('Probar notificación'),
-              subtitle: const Text(
-                'Envía una notificación de prueba en 10 segundos',
-              ),
-              trailing: Icon(
-                Icons.chevron_right,
-                color: scheme.onSurfaceVariant,
-              ),
+              subtitle: const Text('Envía una notificación de prueba en 10 segundos'),
+              trailing: Icon(Icons.chevron_right, color: scheme.onSurfaceVariant),
               onTap: () => _testNotification(context),
             ),
           ),
           const SizedBox(height: 20),
 
-          // Sección acerca de
           _SectionHeader(title: 'ℹ️ Acerca de', scheme: scheme),
           const SizedBox(height: 8),
           Card(
@@ -139,10 +110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   title: const Text('GreenCare'),
                   subtitle: const Text('Versión 1.0.0'),
                 ),
-                Divider(
-                  height: 1,
-                  color: scheme.outline.withValues(alpha: 0.2),
-                ),
+                Divider(height: 1, color: scheme.outline.withValues(alpha: 0.2)),
                 ListTile(
                   leading: Icon(Icons.person_outline, color: scheme.primary),
                   title: const Text('Desarrollada por'),
@@ -209,9 +177,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: Theme.of(
-                      context,
-                    ).colorScheme.onSurfaceVariant.withValues(alpha: 0.3),
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurfaceVariant
+                        .withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),

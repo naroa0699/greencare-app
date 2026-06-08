@@ -34,3 +34,5 @@ lib/core/constants/api_keys.dart
 # API Keys - nunca subir al repositorio
 greencare_flutter/lib/core/constants/api_keys.dart
 greencare_backend/.env
+
+*.zip

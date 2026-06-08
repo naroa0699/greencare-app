@@ -36,7 +36,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _emailController.text.trim(),
         _passwordController.text.trim(),
       );
-      // GoRouter redirige automáticamente a /home
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -52,13 +51,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   String _parseError(String error) {
-    if (error.contains('email-already-in-use'))
+    if (error.contains('email-already-in-use')) {
       return 'Ya existe una cuenta con ese email.';
-    if (error.contains('invalid-email')) return 'El email no es válido.';
-    if (error.contains('weak-password'))
+    }
+    if (error.contains('invalid-email')) {
+      return 'El email no es válido.';
+    }
+    if (error.contains('weak-password')) {
       return 'La contraseña es demasiado débil.';
-    if (error.contains('network-request-failed'))
+    }
+    if (error.contains('network-request-failed')) {
       return 'Sin conexión a internet.';
+    }
     return 'Error al registrarse. Inténtalo de nuevo.';
   }
 
@@ -97,9 +101,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty)
+                      if (value == null || value.isEmpty) {
                         return 'Introduce tu email.';
-                      if (!value.contains('@')) return 'Email no válido.';
+                      }
+                      if (!value.contains('@')) {
+                        return 'Email no válido.';
+                      }
                       return null;
                     },
                   ),
@@ -125,9 +132,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty)
+                      if (value == null || value.isEmpty) {
                         return 'Introduce una contraseña.';
-                      if (value.length < 6) return 'Mínimo 6 caracteres.';
+                      }
+                      if (value.length < 6) {
+                        return 'Mínimo 6 caracteres.';
+                      }
                       return null;
                     },
                   ),
@@ -143,10 +153,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
-                      if (value == null || value.isEmpty)
+                      if (value == null || value.isEmpty) {
                         return 'Confirma tu contraseña.';
-                      if (value != _passwordController.text)
+                      }
+                      if (value != _passwordController.text) {
                         return 'Las contraseñas no coinciden.';
+                      }
                       return null;
                     },
                   ),

@@ -1,0 +1,87 @@
+{
+  "@@locale": "en",
+  "appTitle": "GreenCare",
+  "home": "Home",
+  "myPlants": "My Plants",
+  "calendar": "Calendar",
+  "community": "Community",
+  "greenbot": "GreenBot",
+  "search": "Search plants",
+  "searchHint": "Search aloe vera, monstera...",
+  "addPlant": "Add plant",
+  "addToCollection": "Add to My Plants",
+  "alreadyAdded": "Already in your collection",
+  "waterPlant": "Water",
+  "wateredToday": "Already watered today",
+  "waterNow": "Water now!",
+  "undo": "Undo",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "confirm": "Confirm",
+  "deletePlant": "Delete plant",
+  "deletePlantConfirm": "Are you sure you want to delete this plant?",
+  "newPost": "New post",
+  "publish": "Publish",
+  "postTitle": "Title",
+  "postContent": "Content",
+  "postTitleHint": "E.g: How do I care for my monstera?",
+  "postContentHint": "Tell us more...",
+  "viewThread": "View thread",
+  "reply": "Reply",
+  "replyHint": "Write a reply...",
+  "noPlants": "No plants yet",
+  "noPlantsHint": "Tap + to add one",
+  "needsWaterToday": "Needs water today",
+  "waterInDays": "Water in {days} days",
+  "@waterInDays": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "wateredPlant": "{name} watered 💧",
+  "@wateredPlant": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "streak": "{days} day{plural} streak!",
+  "@streak": {
+    "placeholders": {
+      "days": { "type": "int" },
+      "plural": { "type": "String" }
+    }
+  },
+  "settings": "Settings",
+  "darkMode": "Dark mode",
+  "theme": "Color theme",
+  "language": "Language",
+  "profile": "My profile",
+  "logout": "Sign out",
+  "deleteAccount": "Delete account",
+  "careCalendar": "Care calendar",
+  "noWateringToday": "All good! No plants need water today.",
+  "popularSearches": "Popular searches",
+  "tip": "Tip",
+  "searchTip": "Search by common or scientific name. If care data is unavailable, GreenBot will fill it in automatically.",
+  "watering": "Watering",
+  "light": "Light",
+  "cycle": "Cycle",
+  "description": "Description",
+  "care": "Care",
+  "achievements": "Achievements",
+  "hello": "Hello, {name} 👋",
+  "@hello": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "howAreYourPlants": "How are your plants today?",
+  "needWaterToday": "💧 Need water today",
+  "plantAdded": "Plant added to your collection! 🌿",
+  "beFirstToPost": "Be the first to post! 🌿",
+  "shareWithCommunity": "Share your plants and questions with the community",
+  "selectPost": "Select a post",
+  "orCreateNew": "or create a new one to get started",
+  "replies": "Replies",
+  "beFirstToReply": "Be the first to reply"
+}
