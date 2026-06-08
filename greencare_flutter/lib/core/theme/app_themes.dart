@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 enum AppThemeType { tierra, otono, bosque, rosa, pastel }
 
+/// Colección de temas y paletas usados en la app.
+/// Los nombres y emojis ayudan a elegir el estilo desde la UI del TFG.
 class AppThemes {
   static ThemeData getTheme(AppThemeType type) {
     final scheme = _lightScheme(type);

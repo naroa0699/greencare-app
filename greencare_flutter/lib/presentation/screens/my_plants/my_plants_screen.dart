@@ -133,7 +133,7 @@ class _PlantCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Imagen
+            // Imagen de la planta o placeholder
             Expanded(
               child: Stack(
                 fit: StackFit.expand,
@@ -274,7 +274,7 @@ class _PlantCard extends StatelessWidget {
                       onTap: wateredToday
                           ? null
                           : () async {
-                              // Ajuste por clima si la planta tiene ubicacion
+                              // Ajuste por clima si la planta tiene ubicación
                               WeatherData? weather;
                               if (plant.latitude != null &&
                                   plant.longitude != null) {

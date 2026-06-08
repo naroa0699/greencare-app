@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../core/theme/app_themes.dart';
 
+/// Gestor simple del tema de la app (guarda la preferencia en SharedPreferences).
+/// Lo hice como parte del TFG para mantener el tema y el modo oscuro.
 class ThemeProvider extends ChangeNotifier {
   AppThemeType _themeType = AppThemeType.tierra;
   bool _isDark = false;

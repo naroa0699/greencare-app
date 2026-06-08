@@ -4,10 +4,10 @@ class UserPlantModel {
   final String id;
   final String commonName;
   final String? nickname;
-  final String? imageUrl; // imagen del catalogo (Perenual / Wikimedia)
-  final String? photoUrl; // foto propia del usuario (Firebase Storage)
+  final String? imageUrl; // imagen del catálogo (Perenual/Wikimedia)
+  final String? photoUrl; // foto subida por el usuario (Storage)
   final String watering;
-  final String? sunlight; // requerimiento de luz
+  final String? sunlight; // necesidades de luz
   final String? humidity; // preferencia de humedad
   final DateTime addedAt;
   final DateTime nextWatering;
@@ -15,7 +15,7 @@ class UserPlantModel {
   final DateTime? lastFertilized;
   final DateTime? nextFertilizing;
   final DateTime? lastTransplanted;
-  final double? latitude; // ubicacion de la planta (para el clima)
+  final double? latitude; // ubicación de la planta (para obtener clima)
   final double? longitude;
 
   UserPlantModel({

@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// Modelos para posts y respuestas del foro (Firestore).
+/// `reactions` es un mapa emoji -> lista de userIds.
 class ForumPost {
   final String id;
   final String authorId;

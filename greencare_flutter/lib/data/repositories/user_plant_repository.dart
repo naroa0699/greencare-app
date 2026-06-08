@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_plant_model.dart';
 import '../../core/constants/care_schedule.dart';
@@ -34,41 +35,72 @@ class UserPlantRepository {
     ).doc(plantId).update({'nextWatering': Timestamp.fromDate(date)});
   }
 
-  /// Registra un riego. Si se pasa [weather], la proxima fecha de riego se
-  /// ajusta segun el tiempo de la ubicacion de la planta. Si es null, se usa
-  /// el intervalo base de Perenual (comportamiento anterior intacto).
+  Future<void> updateLocation(
+    String userId,
+    String plantId,
+    double latitude,
+    double longitude,
+  ) async {
+    await _plantsRef(
+      userId,
+    ).doc(plantId).update({'latitude': latitude, 'longitude': longitude});
+  }
+
   Future<void> waterPlant(
     String userId,
     String plantId,
     String wateringType, {
     WeatherData? weather,
   }) async {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
+    try {
+      final now = DateTime.now();
+      final today = DateTime(now.year, now.month, now.day);
 
-    await _plantsRef(userId).doc(plantId).update({
-      'lastWatered': Timestamp.fromDate(today),
-      'nextWatering': Timestamp.fromDate(
-        calculateNextWatering(wateringType, weather: weather),
-      ),
-    });
+      debugPrint('Regando planta $plantId...');
 
-    // Actualizar contadores
-    final userRef = _db.collection('users').doc(userId);
-    await userRef.set({
-      'totalWaterings': FieldValue.increment(1),
-      'lastWateringDate': Timestamp.fromDate(today),
-    }, SetOptions(merge: true));
+      // Cojo la fecha 'nextWatering' actual y calculo la próxima a partir de ahí
+      final plantDoc = await _plantsRef(userId).doc(plantId).get();
+      final plantData = plantDoc.data() as Map<String, dynamic>;
+      final currentNextWatering = (plantData['nextWatering'] as Timestamp)
+          .toDate();
+      final base = DateTime(
+        currentNextWatering.year,
+        currentNextWatering.month,
+        currentNextWatering.day,
+      );
 
-    // Guardar historial
-    await _db
-        .collection('users')
-        .doc(userId)
-        .collection('watering_history')
-        .add({'plantId': plantId, 'wateredAt': Timestamp.fromDate(today)});
+      await _plantsRef(userId).doc(plantId).update({
+        'lastWatered': Timestamp.fromDate(today),
+        'nextWatering': Timestamp.fromDate(
+          calculateNextWatering(wateringType, weather: weather, from: base),
+        ),
+      });
 
-    // Comprobar si la racha avanza
-    await updateStreak(userId);
+      debugPrint('nextWatering actualizado OK');
+
+      final userRef = _db.collection('users').doc(userId);
+      await userRef.set({
+        'totalWaterings': FieldValue.increment(1),
+        'lastWateringDate': Timestamp.fromDate(today),
+      }, SetOptions(merge: true));
+
+      debugPrint('contadores actualizados OK');
+
+      await _db
+          .collection('users')
+          .doc(userId)
+          .collection('watering_history')
+          .add({'plantId': plantId, 'wateredAt': Timestamp.fromDate(today)});
+
+      debugPrint('historial guardado OK');
+
+      await updateStreak(userId);
+
+      debugPrint('racha actualizada OK');
+    } catch (e) {
+      debugPrint('ERROR en waterPlant: $e');
+      rethrow;
+    }
   }
 
   Future<void> undoWatering(String userId, String plantId) async {
@@ -78,7 +110,6 @@ class UserPlantRepository {
     });
   }
 
-  /// Registra un abonado y programa el siguiente. Por defecto cada 30 dias.
   Future<void> fertilizePlant(
     String userId,
     String plantId, {
@@ -98,10 +129,8 @@ class UserPlantRepository {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
 
-    // Obtener todas las plantas
     final plants = await getMyPlants(userId).first;
 
-    // Plantas que tocaba regar hoy
     final plantsDueToday = plants.where((plant) {
       final next = DateTime(
         plant.nextWatering.year,
@@ -111,10 +140,8 @@ class UserPlantRepository {
       return next.isAtSameMomentAs(today) || next.isBefore(today);
     }).toList();
 
-    // Si no tocaba regar ninguna hoy, no hacer nada
     if (plantsDueToday.isEmpty) return;
 
-    // Comprobar si todas las que tocaban han sido regadas hoy
     final allWatered = plantsDueToday.every((plant) {
       final lw = plant.lastWatered;
       if (lw == null) return false;
@@ -124,7 +151,6 @@ class UserPlantRepository {
 
     if (!allWatered) return;
 
-    // Todas regadas — actualizar racha
     final userRef = _db.collection('users').doc(userId);
     final userDoc = await userRef.get();
     final data = userDoc.exists
@@ -150,7 +176,6 @@ class UserPlantRepository {
       } else if (diff > 1) {
         streak = 1;
       }
-      // diff == 0 ya se contó hoy
     }
 
     await userRef.set({

@@ -112,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 40),
 
-                  // Email
+                  // Campo: email
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -133,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Contraseña
+                  // Campo: contraseña
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -164,7 +164,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Botón login
+                  // Botón para iniciar sesión
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -191,7 +191,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Separador
+                  // Separador "o"
                   Row(
                     children: [
                       const Expanded(child: Divider()),
@@ -207,7 +207,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 12),
 
-                  // Botón Google
+                  // Botón: iniciar con Google
                   SizedBox(
                     width: double.infinity,
                     child: OutlinedButton.icon(
@@ -234,7 +234,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Ir a registro
+                  // Enlace a la pantalla de registro
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

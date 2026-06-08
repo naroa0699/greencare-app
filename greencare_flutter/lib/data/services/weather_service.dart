@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-// Mismo nivel de import que chatbot_service.dart (misma carpeta).
+// Importaciones compartidas con otros servicios de la carpeta
 import '../../../core/constants/app_config.dart';
 import '../../../core/constants/care_schedule.dart';
 
-/// Obtiene el tiempo de la ubicacion de una planta a traves del backend
-/// (que consulta Open-Meteo). Si algo falla devuelve null, y el calculo
-/// de riego usa el intervalo base sin ajuste.
+/// Pido el tiempo para la ubicación de una planta al backend (usa Open-Meteo).
+/// Si hay algún fallo devuelvo null para que la app use el intervalo base.
+/// Así no se rompe el TFG si el servicio externo no responde.
 class WeatherService {
   Future<WeatherData?> getWeather(double lat, double lon) async {
     try {

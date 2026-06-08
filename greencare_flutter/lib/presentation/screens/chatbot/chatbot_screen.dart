@@ -18,7 +18,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   @override
   void initState() {
     super.initState();
-    // Mensaje de bienvenida
+    // Mensaje de bienvenida de GreenBot
     _messages.add({
       'role': 'assistant',
       'content':
@@ -93,7 +93,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ),
       body: Column(
         children: [
-          // Lista de mensajes
+          // Lista de mensajes del chat
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
@@ -110,7 +110,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             ),
           ),
 
-          // Indicador de escritura
+          // Indicador: GreenBot está generando respuesta
           if (_isLoading)
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
@@ -126,7 +126,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
               ),
             ),
 
-          // Campo de entrada
+          // Campo de entrada y botón enviar
           Container(
             padding: EdgeInsets.only(
               left: 12,

@@ -42,7 +42,7 @@ class AuthProvider extends ChangeNotifier {
 
   Future<void> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
-    if (googleUser == null) return; // usuario canceló
+    if (googleUser == null) return; // el usuario canceló el flujo de Google Sign-In
 
     final googleAuth = await googleUser.authentication;
     final credential = GoogleAuthProvider.credential(
@@ -53,7 +53,7 @@ class AuthProvider extends ChangeNotifier {
     final userCredential = await _auth.signInWithCredential(credential);
     final user = userCredential.user!;
 
-    // Crear documento solo si es la primera vez
+    // Creo el documento de usuario si no existe (primera vez que entra)
     final doc = await _db.collection('users').doc(user.uid).get();
     if (!doc.exists) {
       await _db.collection('users').doc(user.uid).set({

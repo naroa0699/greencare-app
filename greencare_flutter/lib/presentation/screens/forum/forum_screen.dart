@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../../data/models/forum_post_model.dart';
 import '../../../data/repositories/forum_repository.dart';
 
+/// Pantalla principal del foro. Lista publicaciones y permite crear nuevas.
+/// Tiene un diseño adaptado para web (lista + detalle) y móvil.
 class ForumScreen extends StatefulWidget {
   const ForumScreen({super.key});
 

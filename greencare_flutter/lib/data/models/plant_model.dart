@@ -1,3 +1,5 @@
+/// Modelo simple que representa una especie devuelta por Perenual.
+/// Uso los campos mínimos que necesito en la UI del TFG.
 class PlantModel {
   final int id;
   final String commonName;

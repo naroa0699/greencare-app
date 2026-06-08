@@ -1,9 +1,8 @@
 import 'package:geolocator/geolocator.dart';
 
-/// Encapsula la obtencion de la ubicacion del dispositivo con manejo de
-/// permisos. Nunca lanza excepciones: si algo falla (sin permiso, servicio
-/// desactivado, timeout) devuelve null y la app continua sin ubicacion,
-/// de modo que el riego usara el intervalo base de Perenual sin ajuste.
+/// Pido la ubicación del dispositivo y gestiono los permisos.
+/// Si no hay permiso, el servicio está apagado o hay timeout devuelvo null
+/// para que la app siga funcionando y use el intervalo base de Perenual.
 class LocationService {
   Future<Position?> getCurrentPosition() async {
     try {

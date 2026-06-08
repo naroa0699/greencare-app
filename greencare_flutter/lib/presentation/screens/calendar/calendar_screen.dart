@@ -17,7 +17,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   DateTime? _selectedDay;
   List<UserPlantModel> _allPlants = [];
   StreamSubscription<List<UserPlantModel>>? _plantsSub;
-  final Map<String, bool> _wateredToday = {};
+  int _calendarKey = 0;
 
   @override
   void initState() {
@@ -34,56 +34,57 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   void _loadPlants() {
     final userId = FirebaseAuth.instance.currentUser!.uid;
+    debugPrint('Escuchando plantas de usuario: $userId');
     _plantsSub = UserPlantRepository().getMyPlants(userId).listen((plants) {
-      if (mounted) setState(() => _allPlants = plants);
+      debugPrint(
+        'Plantas actualizadas: ${plants.map((p) => '${p.commonName}: ${p.nextWatering}').join(', ')}',
+      );
+      if (mounted) {
+        setState(() {
+          _allPlants = plants;
+          _calendarKey++;
+        });
+      }
     });
   }
 
-  String _dayKey(String plantId, DateTime day) =>
-      '${plantId}_${day.year}_${day.month}_${day.day}';
+  int _intervalDays(String watering) {
+    switch (watering.toLowerCase()) {
+      case 'frequent':
+        return 2;
+      case 'average':
+        return 5;
+      case 'minimum':
+        return 10;
+      default:
+        return 30;
+    }
+  }
 
   List<UserPlantModel> _plantsForDay(DateTime day) {
+    final dayNorm = DateTime(day.year, day.month, day.day);
     return _allPlants.where((plant) {
-      int interval;
-      switch (plant.watering.toLowerCase()) {
-        case 'frequent':
-          interval = 2;
-          break;
-        case 'average':
-          interval = 5;
-          break;
-        case 'minimum':
-          interval = 10;
-          break;
-        default:
-          interval = 30;
-          break;
-      }
-      final start = plant.nextWatering;
-      final diff = day
-          .difference(DateTime(start.year, start.month, start.day))
-          .inDays;
-      return diff >= 0 && diff % interval == 0;
+      // Normalizo nextWatering a la zona local para comparar por días.
+      final nextLocal = plant.nextWatering.toLocal();
+      final next = DateTime(nextLocal.year, nextLocal.month, nextLocal.day);
+      final diff = dayNorm.difference(next).inDays;
+      if (diff < 0) return false;
+      final interval = _intervalDays(plant.watering);
+      return diff % interval == 0;
     }).toList();
   }
 
-  List<UserPlantModel> _getEventsForDay(DateTime day) => _plantsForDay(day);
-
-  bool _isWateredOn(UserPlantModel plant, DateTime selectedDay) {
-    if (!isSameDay(selectedDay, DateTime.now())) return false;
-
-    final key = _dayKey(plant.id, DateTime.now());
-    if (_wateredToday[key] == true) return true;
-
+  bool _isWateredOn(UserPlantModel plant, DateTime day) {
     final lw = plant.lastWatered;
     if (lw == null) return false;
-    return isSameDay(lw, DateTime.now());
+    return isSameDay(lw, day);
   }
 
   @override
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser!.uid;
     final repo = UserPlantRepository();
+    final scheme = Theme.of(context).colorScheme;
 
     final selectedPlants = _selectedDay != null
         ? _plantsForDay(_selectedDay!)
@@ -94,24 +95,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
       body: Column(
         children: [
           TableCalendar<UserPlantModel>(
+            key: ValueKey(_calendarKey),
             firstDay: DateTime.now().subtract(const Duration(days: 365)),
             lastDay: DateTime.now().add(const Duration(days: 365)),
             focusedDay: _focusedDay,
             selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            eventLoader: _getEventsForDay,
+            eventLoader: _plantsForDay,
             calendarStyle: CalendarStyle(
               markerDecoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                color: scheme.primary,
                 shape: BoxShape.circle,
               ),
               selectedDecoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
+                color: scheme.primary,
                 shape: BoxShape.circle,
               ),
               todayDecoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.primary.withValues(alpha: 0.4),
+                color: scheme.primary.withValues(alpha: 0.4),
                 shape: BoxShape.circle,
               ),
             ),
@@ -130,19 +130,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
           Expanded(
             child: selectedPlants.isEmpty
-                ? const Center(
+                ? Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
                           Icons.check_circle_outline,
                           size: 60,
-                          color: Colors.green,
+                          color: scheme.primary,
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         Text(
-                          'Nada que hacer este dia',
-                          style: TextStyle(color: Colors.grey, fontSize: 16),
+                          'Nada que hacer este día',
+                          style: TextStyle(
+                            color: scheme.onSurfaceVariant,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),
@@ -152,9 +155,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     itemCount: selectedPlants.length,
                     itemBuilder: (context, index) {
                       final plant = selectedPlants[index];
-                      final selected = _selectedDay!;
-                      final isToday = isSameDay(selected, DateTime.now());
-                      final watered = _isWateredOn(plant, selected);
+                      final isToday = isSameDay(_selectedDay!, DateTime.now());
+                      final watered = _isWateredOn(plant, _selectedDay!);
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8),
@@ -162,7 +164,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           leading: CircleAvatar(
                             backgroundColor: watered
                                 ? Colors.green
-                                : Colors.blue,
+                                : scheme.primary,
                             child: Icon(
                               watered ? Icons.check : Icons.water_drop,
                               color: Colors.white,
@@ -175,58 +177,57 @@ class _CalendarScreenState extends State<CalendarScreen> {
                           ),
                           subtitle: Text(
                             watered
-                                ? 'Regada hoy ✅'
+                                ? 'Regada ✅'
                                 : isToday
                                 ? 'Riego: ${plant.watering}'
                                 : 'Pendiente de riego',
                             style: TextStyle(
-                              color: watered ? Colors.green : Colors.grey,
+                              color: watered
+                                  ? Colors.green
+                                  : scheme.onSurfaceVariant,
                             ),
                           ),
                           trailing: watered
-                              ? const Chip(
-                                  label: Text(
+                              ? Chip(
+                                  label: const Text(
                                     '✅ Hecho',
                                     style: TextStyle(fontSize: 12),
                                   ),
-                                  backgroundColor: Color(0xFFE8F5E9),
+                                  backgroundColor: scheme.primaryContainer,
                                 )
                               : ElevatedButton.icon(
                                   onPressed: !isToday
                                       ? null
                                       : () async {
-                                          final key = _dayKey(
-                                            plant.id,
-                                            DateTime.now(),
-                                          );
-                                          setState(
-                                            () => _wateredToday[key] = true,
-                                          );
-                                          await repo.waterPlant(
-                                            userId,
-                                            plant.id,
-                                            plant.watering,
-                                          );
-                                          if (context.mounted) {
-                                            ScaffoldMessenger.of(
-                                              context,
-                                            ).showSnackBar(
-                                              SnackBar(
-                                                content: Text(
-                                                  '${plant.nickname ?? plant.commonName} regada 💧',
-                                                ),
-                                                duration: const Duration(
-                                                  seconds: 2,
-                                                ),
-                                              ),
+                                          try {
+                                            await repo.waterPlant(
+                                              userId,
+                                              plant.id,
+                                              plant.watering,
                                             );
+                                            if (context.mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text(
+                                                    '${plant.nickname ?? plant.commonName} regada 💧',
+                                                  ),
+                                                  duration: const Duration(
+                                                    seconds: 2,
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            debugPrint('ERROR al regar: $e');
                                           }
                                         },
                                   icon: const Icon(Icons.water_drop, size: 16),
                                   label: Text(isToday ? 'Regar' : 'Pendiente'),
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: isToday
-                                        ? Colors.blue
+                                        ? scheme.primary
                                         : Colors.grey.shade300,
                                     foregroundColor: isToday
                                         ? Colors.white

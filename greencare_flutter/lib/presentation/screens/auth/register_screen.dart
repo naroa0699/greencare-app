@@ -91,7 +91,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 40),
 
-                  // Email
+                  // Campo: email
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -112,7 +112,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Contraseña
+                  // Campo: contraseña
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
@@ -143,7 +143,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Confirmar contraseña
+                  // Campo: confirmar contraseña
                   TextFormField(
                     controller: _confirmController,
                     obscureText: _obscurePassword,
@@ -164,7 +164,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Botón registro
+                  // Botón para crear la cuenta
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -191,7 +191,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Volver al login
+                  // Enlace para volver al login
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

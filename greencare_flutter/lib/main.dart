@@ -7,6 +7,8 @@ import 'data/services/notification_service.dart';
 import 'providers/theme_provider.dart';
 
 void main() async {
+  // Inicialización de Firebase y notificaciones.
+  // Lo dejo así para el TFG: prepara todo antes de arrancar la app.
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await NotificationService().init();

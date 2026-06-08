@@ -8,6 +8,10 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/constants/api_keys.dart';
 import '../../../data/services/chatbot_service.dart';
 
+/// Pantalla de búsqueda de plantas.
+/// Hace llamadas a Perenual y usa GreenBot para completar imágenes o
+/// traducir consultas si hace falta. Es la vista que uso para encontrar
+/// especies en el TFG.
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
 

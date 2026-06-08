@@ -1,6 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/forum_post_model.dart';
 
+/// Repositorio para manejar posts y respuestas en Firestore.
+/// Lo uso desde la app para gestionar la comunidad del TFG.
 class ForumRepository {
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 

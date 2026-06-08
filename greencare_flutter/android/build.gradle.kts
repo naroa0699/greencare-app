@@ -1,5 +1,5 @@
 plugins {
-    // ... otros plugins si los hubiera
+    // otros plugins si hiciera falta
 }
 
 allprojects {

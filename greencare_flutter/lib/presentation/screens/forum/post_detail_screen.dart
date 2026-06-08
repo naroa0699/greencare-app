@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../../../data/models/forum_post_model.dart';
 import '../../../data/repositories/forum_repository.dart';
 
+/// Pantalla de hilo de foro: muestra el post y sus respuestas.
+/// Permite escribir y enviar respuestas en tiempo real.
 class PostDetailScreen extends StatefulWidget {
   final ForumPost post;
   const PostDetailScreen({super.key, required this.post});

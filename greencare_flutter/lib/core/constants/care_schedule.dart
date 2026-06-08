@@ -32,10 +32,15 @@ int baseWateringDays(String wateringType) {
 /// Si se pasa [weather], ajusta el intervalo segun el tiempo de la ubicacion
 /// de la planta. Si es null (sin ubicacion o el servicio fallo), usa el
 /// intervalo base de Perenual sin cambios.
-DateTime calculateNextWatering(String wateringType, {WeatherData? weather}) {
+DateTime calculateNextWatering(
+  String wateringType, {
+  WeatherData? weather,
+  DateTime? from,
+}) {
   final base = baseWateringDays(wateringType);
   final days = weather == null ? base : _weatherAdjustedDays(base, weather);
-  return DateTime.now().add(Duration(days: days));
+  final start = from ?? DateTime.now().toLocal();
+  return DateTime(start.year, start.month, start.day).add(Duration(days: days));
 }
 
 /// Aplica un factor multiplicador al intervalo base segun las condiciones.
@@ -47,7 +52,8 @@ int _weatherAdjustedDays(int baseDays, WeatherData w) {
   if (w.humidity < 40) factor -= 0.15; // aire seco -> regar antes
   if (w.maxTemp < 12) factor += 0.25; // frio -> espaciar
   if (w.humidity > 75) factor += 0.15; // ambiente humedo -> espaciar
-  if (w.precipitationMm > 5) factor += 0.30; // lluvia (balcon/exterior) -> espaciar
+  if (w.precipitationMm > 5)
+    factor += 0.30; // lluvia (balcon/exterior) -> espaciar
   factor = factor.clamp(0.5, 1.6);
   final adjusted = (baseDays * factor).round();
   return adjusted.clamp(1, 60);

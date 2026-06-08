@@ -21,6 +21,8 @@ import 'presentation/screens/profile/profile_screen.dart';
 import 'presentation/screens/achievements/achievements_screen.dart';
 import 'presentation/screens/settings/settings_screen.dart';
 
+// Defino las rutas y la lógica de redirección para la app.
+// Está pensado para el TFG: protege rutas según el estado de sesión.
 GoRouter createRouter(AuthProvider authProvider) {
   return GoRouter(
     initialLocation: '/login',

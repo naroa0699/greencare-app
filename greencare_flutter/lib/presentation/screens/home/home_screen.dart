@@ -109,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 16),
                     ],
 
-                    // Racha
+                                    // Sección: racha diaria del usuario
                     StreamBuilder<DocumentSnapshot>(
                       stream: FirebaseFirestore.instance
                           .collection('users')

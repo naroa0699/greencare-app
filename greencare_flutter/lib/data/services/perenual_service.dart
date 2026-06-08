@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/plant_model.dart';
 import '../../core/constants/api_keys.dart';
 
+/// Servicio para buscar plantas en la API de Perenual.
+/// Devuelve `PlantModel` usado en la app del TFG.
 class PerenualService {
   static const String _baseUrl = 'https://perenual.com/api';
 

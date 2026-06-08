@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/constants/app_config.dart';
 
+/// Servicio que habla con el backend para obtener respuestas de chat,
+/// sugerencias de cuidados y traducciones. Lo uso para el GreenBot del TFG.
 class ChatbotService {
   static const String _chatUrl = '$backendBaseUrl/api/chat';
   static const String _plantCareUrl = '$backendBaseUrl/api/plant-care';

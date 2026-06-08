@@ -51,7 +51,8 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Fallback de cuidados con Gemini — solo si backend está disponible
+        // Si faltan datos de cuidados, intento rellenarlos con el servicio
+        // del backend (GreenBot). Si falla, uso valores por defecto.
         try {
           if (data['watering'] == null ||
               data['sunlight'] == null ||
@@ -63,13 +64,12 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
             data['cycle'] ??= care['cycle'];
           }
         } catch (e) {
-          debugPrint('Gemini fallback no disponible: $e');
+          debugPrint('Fallback de cuidados no disponible: $e');
           data['watering'] ??= 'Average';
           data['sunlight'] ??= ['part shade'];
           data['cycle'] ??= 'Perennial';
         }
 
-        // Imagen con Wikimedia como fallback
         try {
           final perenualImage =
               data['default_image']?['original_url'] as String?;
@@ -126,9 +126,6 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
       final userId = FirebaseAuth.instance.currentUser!.uid;
       final repo = UserPlantRepository();
 
-      // Ubicacion de la planta para el clima (puede ser null si no hay permiso)
-      final pos = await LocationService().getCurrentPosition();
-
       final plant = UserPlantModel(
         id: _plant!['id'].toString(),
         commonName: _plant!['common_name'] ?? 'Sin nombre',
@@ -137,8 +134,8 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
         sunlight: (_plant!['sunlight'] as List?)?.first?.toString(),
         addedAt: DateTime.now(),
         nextWatering: calculateNextWatering(_plant!['watering'] ?? 'Average'),
-        latitude: pos?.latitude,
-        longitude: pos?.longitude,
+        latitude: null,
+        longitude: null,
       );
 
       await repo.addPlant(userId, plant);
@@ -148,13 +145,29 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
           _alreadyAdded = true;
           _isAdding = false;
           _wateredToday = false;
-          _latitude = pos?.latitude;
-          _longitude = pos?.longitude;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('¡Planta añadida a tu colección! 🌿')),
         );
       }
+
+      // Ubicación en segundo plano
+      LocationService().getCurrentPosition().then((pos) async {
+        if (pos != null) {
+          await repo.updateLocation(
+            userId,
+            plant.id,
+            pos.latitude,
+            pos.longitude,
+          );
+          if (mounted) {
+            setState(() {
+              _latitude = pos.latitude;
+              _longitude = pos.longitude;
+            });
+          }
+        }
+      });
     } catch (e) {
       debugPrint('Error añadiendo planta: $e');
       if (mounted) setState(() => _isAdding = false);
@@ -169,7 +182,6 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
 
     setState(() => _wateredToday = true);
 
-    // Si la planta tiene ubicacion, ajustamos el riego segun el tiempo
     WeatherData? weather;
     if (_latitude != null && _longitude != null) {
       weather = await WeatherService().getWeather(_latitude!, _longitude!);
@@ -189,7 +201,6 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
           action: SnackBarAction(
             label: 'Deshacer',
             onPressed: () async {
-              // Restaurar lastWatered anterior
               setState(() => _wateredToday = false);
               if (_lastWatered != null) {
                 await repo.updateNextWatering(
@@ -354,7 +365,7 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                               ),
                               label: Text(
                                 _wateredToday
-                                    ? 'Ya regada hoy ✅'
+                                    ? 'Ya regada hoy'
                                     : 'Marcar como regada',
                               ),
                               style: ElevatedButton.styleFrom(
@@ -371,7 +382,6 @@ class _PlantDetailScreenState extends State<PlantDetailScreen> {
                             ),
                           ),
                         ],
-
                         const SizedBox(height: 30),
                       ],
                     ),

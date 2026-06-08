@@ -19,7 +19,7 @@ class MainScaffold extends StatelessWidget {
   }
 }
 
-// ─── MOBILE ───────────────────────────────────────────────────────────────────
+// ─── VERSIÓN MÓVIL ─────────────────────────────────────────────────────────────
 
 class _MobileLayout extends StatelessWidget {
   final Widget child;
@@ -92,7 +92,7 @@ class _MobileLayout extends StatelessWidget {
   }
 }
 
-// ─── WEB ──────────────────────────────────────────────────────────────────────
+// ─── VERSIÓN WEB ──────────────────────────────────────────────────────────────
 
 class _WebLayout extends StatelessWidget {
   final Widget child;
@@ -119,7 +119,7 @@ class _WebLayout extends StatelessWidget {
       backgroundColor: scheme.surface,
       body: Row(
         children: [
-          // Sidebar
+          // Barra lateral (sidebar)
           Container(
             width: 240,
             decoration: BoxDecoration(
@@ -130,7 +130,7 @@ class _WebLayout extends StatelessWidget {
             ),
             child: Column(
               children: [
-                // Logo
+                // Logo (nombre e icono de la app)
                 Container(
                   padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
                   child: Row(
@@ -152,7 +152,7 @@ class _WebLayout extends StatelessWidget {
                 Divider(color: scheme.outline.withValues(alpha: 0.2)),
                 const SizedBox(height: 8),
 
-                // Nav items
+                // Elementos de navegación
                 _SidebarItem(
                   icon: Icons.home_outlined,
                   selectedIcon: Icons.home,
@@ -192,7 +192,7 @@ class _WebLayout extends StatelessWidget {
                 const Spacer(),
                 Divider(color: scheme.outline.withValues(alpha: 0.2)),
 
-                // Tema rápido
+                // Cambiar tema rápido
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Row(
@@ -227,7 +227,7 @@ class _WebLayout extends StatelessWidget {
                   ),
                 ),
 
-                // Perfil usuario
+                // Perfil de usuario (acceso a ajustes y perfil)
                 InkWell(
                   onTap: () => context.push('/profile'),
                   child: Padding(
@@ -294,7 +294,7 @@ class _WebLayout extends StatelessWidget {
           Expanded(
             child: Column(
               children: [
-                // Top bar
+                // Barra superior
                 Container(
                   height: 56,
                   padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -335,7 +335,7 @@ class _WebLayout extends StatelessWidget {
                   ),
                 ),
 
-                // Página actual
+                // Contenedor de la página actual
                 Expanded(
                   child: Center(
                     child: ConstrainedBox(

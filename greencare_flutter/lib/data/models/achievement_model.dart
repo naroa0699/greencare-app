@@ -1,3 +1,5 @@
+/// Logros del usuario mostrados en la app. Los utilizo para gamificar
+/// el TFG: motivar al usuario a cuidar sus plantas.
 class Achievement {
   final String id;
   final String title;
